@@ -32,6 +32,12 @@ https://www.st.com/en/evaluation-tools/nucleo-f767zi.html
 
 This is the board used for prototyping the embedded software. Depending on the needs of the ventilator design, the final design could be paired down to a m4 chipset. 
 
+4. NXP MPXV7007 gauge pressure sensor:
+
+https://www.nxp.com/products/sensors/pressure-sensors/vacuum-sensors-50-to-115-kpa/differential-and-gauge-pressure-sensor-7-to-7-kpa:MPXV7007DP
+
+This sensor reads the air in the tubing so that accurate pressure levels are met. 
+
 
 Software:
 
