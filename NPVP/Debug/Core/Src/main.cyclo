@@ -1,0 +1,12 @@
+../Core/Src/main.c:120:7:adc_to_voltage	1
+../Core/Src/main.c:125:7:voltage_to_kpa	1
+../Core/Src/main.c:130:7:kpa_to_inh2o	1
+../Core/Src/main.c:136:6:autoZero	2
+../Core/Src/main.c:157:5:main	1
+../Core/Src/main.c:221:6:SystemClock_Config	4
+../Core/Src/main.c:279:13:MX_ADC1_Init	3
+../Core/Src/main.c:331:13:MX_ETH_Init	2
+../Core/Src/main.c:380:13:MX_USART3_UART_Init	2
+../Core/Src/main.c:415:13:MX_USB_OTG_FS_PCD_Init	2
+../Core/Src/main.c:450:13:MX_GPIO_Init	1
+../Core/Src/main.c:522:6:Error_Handler	1
