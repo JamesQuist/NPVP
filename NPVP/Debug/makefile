@@ -60,8 +60,8 @@ all: main-build
 main-build: NPVP.elf secondary-outputs
 
 # Tool invocations
-NPVP.elf NPVP.map: $(OBJS) $(USER_OBJS) /Users/james/Documents/Stm32_Projects/NPVP/STM32F767ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "NPVP.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"/Users/james/Documents/Stm32_Projects/NPVP/STM32F767ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="NPVP.map" -Wl,--gc-sections -static -u _printf_float --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+NPVP.elf NPVP.map: $(OBJS) $(USER_OBJS) /Users/james/NPVP/NPVP/STM32F767ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "NPVP.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"/Users/james/NPVP/NPVP/STM32F767ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="NPVP.map" -Wl,--gc-sections -static -u _printf_float --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
