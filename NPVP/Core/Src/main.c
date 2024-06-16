@@ -34,8 +34,11 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-//#define ADC_BUF_LEN 1000
-//#define FILTER_ALPHA 0.1 // Filter coefficient
+#define KNOWN_REF_PRESSURE 0
+#define PSI_PRESSURE_MAX 7
+#define PSI_PRESSURE_MIN -7
+#define OUTPUT_VOLTAGE_MAX 5
+#define OUTPUT_VOLTAGE_MIN 0
 #define ADC_THRESHOLD 100  // Define a threshold for detecting sensor disconnection
 /* USER CODE END PD */
 
@@ -76,11 +79,6 @@ UART_HandleTypeDef huart3;
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
-const int known_ref_pressure = 0;
-const int psi_pressure_max = 7;
-const int psi_pressure_min = -7;
-const int output_voltage_max = 5;
-const int output_voltage_min = 0;
 
 int sensor_status = 1;
 int start_up = 1;
@@ -252,15 +250,15 @@ void func_adc_to_voltage(void){
 // Voltage to psi
 void func_voltage_to_psi(void){
 //	float *psi_ptr = &measured_psi_pressure;
-	measured_psi_pressure = (((measured_voltage_value - output_voltage_min) *
-  	  	  (psi_pressure_max - psi_pressure_min)) / (output_voltage_max - output_voltage_min)) + psi_pressure_min;
+	measured_psi_pressure = (((measured_voltage_value - OUTPUT_VOLTAGE_MIN) *
+  	  	  (PSI_PRESSURE_MAX  - PSI_PRESSURE_MIN)) / (OUTPUT_VOLTAGE_MAX - OUTPUT_VOLTAGE_MIN)) + PSI_PRESSURE_MIN;
 
 }
 
 // Auto-zero
 void func_auto_zero(void){
 //	float *auto_zero_pressure_ptr = &auto_zero_pressure_value;
-	auto_zero_pressure_value =  measured_psi_pressure - known_ref_pressure;
+	auto_zero_pressure_value =  measured_psi_pressure - KNOWN_REF_PRESSURE;
 }
 
 // Corrected pressure
@@ -347,7 +345,6 @@ int main(void)
   MX_ETH_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-
 //  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buffer, ADC_BUF_LEN);
 
   /* USER CODE END 2 */

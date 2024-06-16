@@ -1,9 +1,3 @@
 adc_value
-measured_voltage_value
-measured_psi_pressure
-adc_sum
-auto_zero_pressure_value
-avg_adc_value
-corrected_pressure_value
-corrected_cmh2o_pressure
-sample_count
+avg_voltage_value
+avg_psi_pressure
