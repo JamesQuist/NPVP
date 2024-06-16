@@ -60,15 +60,14 @@ __attribute__((at(0x2007c000))) ETH_DMADescTypeDef  DMARxDscrTab[ETH_RX_DESC_CNT
 __attribute__((at(0x2007c0a0))) ETH_DMADescTypeDef  DMATxDscrTab[ETH_TX_DESC_CNT]; /* Ethernet Tx DMA Descriptors */
 
 #elif defined ( __GNUC__ ) /* GNU Compiler */
+
 ETH_DMADescTypeDef DMARxDscrTab[ETH_RX_DESC_CNT] __attribute__((section(".RxDecripSection"))); /* Ethernet Rx DMA Descriptors */
 ETH_DMADescTypeDef DMATxDscrTab[ETH_TX_DESC_CNT] __attribute__((section(".TxDecripSection")));   /* Ethernet Tx DMA Descriptors */
-
 #endif
 
 ETH_TxPacketConfig TxConfig;
 
 ADC_HandleTypeDef hadc1;
-DMA_HandleTypeDef hdma_adc1;
 
 ETH_HandleTypeDef heth;
 
@@ -105,7 +104,6 @@ char output_message[100];
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_DMA_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 static void MX_ADC1_Init(void);
@@ -239,11 +237,10 @@ void func_get_adc_value(void){
 // ADC to voltage
 void func_adc_to_voltage(void){
 //	float *voltage_ptr = &measured_voltage_value;
-//	measured_voltage_value = (adc_value / 4095) * 3.3;
 	if(sensor_status){
-		measured_voltage_value = (adc_value / 4095) * 3.3;
+		measured_voltage_value = (adc_value * 3.3) / 4096;
 	} else {
-		measured_voltage_value = (avg_adc_value / 4095) * 3.3;
+		measured_voltage_value = (adc_value * 3.3) / 4096;
 	}
 }
 
@@ -304,9 +301,9 @@ void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc) {
 }
 
 // DMA Error callback
-void HAL_DMA_ErrorCallback(DMA_HandleTypeDef *hdma) {
-    // Handle DMA errors
-}
+//void HAL_DMA_ErrorCallback(DMA_HandleTypeDef *hdma) {
+//    // Handle DMA errors
+//}
 
 /* USER CODE END 0 */
 
@@ -316,6 +313,7 @@ void HAL_DMA_ErrorCallback(DMA_HandleTypeDef *hdma) {
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -338,7 +336,6 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DMA_Init();
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   MX_ADC1_Init();
@@ -365,15 +362,18 @@ int main(void)
 	  func_monitor_sensor_status();
 
 	  //Sensor calibration
-	  func_calibrate_sensor();
+//	  func_calibrate_sensor();
 
 	  // Take and correct measurement
-	  func_new_measurement();
-	  func_corrected_measurement();
+//	  func_new_measurement();
+//	  func_corrected_measurement();
+	  func_get_adc_value();
+	  func_adc_to_voltage();
 
-	  sprintf(output_message, "ADC Value: %.2f, Voltage: %.2fV, %.2fcmH2O\r\n", adc_value, measured_voltage_value, corrected_cmh2o_pressure);
+//	  sprintf(output_message, "ADC Value: %.2f, Voltage: %.2fV, %.2fcmH2O\r\n", adc_value, measured_voltage_value, corrected_cmh2o_pressure);
+	  sprintf(output_message, "ADC Value: %.2f, Voltage: %.2fV\r\n", adc_value, measured_voltage_value);
 	  HAL_UART_Transmit(&huart3,(uint8_t *)output_message, strlen(output_message), HAL_MAX_DELAY);
-	  HAL_Delay(500);
+	  HAL_Delay(1000);
 
     /* USER CODE END WHILE */
 
@@ -469,7 +469,7 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.NbrOfConversion = 1;
-  hadc1.Init.DMAContinuousRequests = ENABLE;
+  hadc1.Init.DMAContinuousRequests = DISABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
@@ -652,22 +652,6 @@ static void MX_USB_OTG_FS_PCD_Init(void)
   /* USER CODE BEGIN USB_OTG_FS_Init 2 */
 
   /* USER CODE END USB_OTG_FS_Init 2 */
-
-}
-
-/**
-  * Enable DMA controller clock
-  */
-static void MX_DMA_Init(void)
-{
-
-  /* DMA controller clock enable */
-  __HAL_RCC_DMA2_CLK_ENABLE();
-
-  /* DMA interrupt init */
-  /* DMA2_Stream0_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
 
 }
 
