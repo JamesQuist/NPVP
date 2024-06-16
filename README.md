@@ -12,7 +12,7 @@ I believe it’s always better to have more options out there so that a person i
 
 Hardware:
 
-1. 24V Micronel Radual Blower:
+1. 24V Micronel Radial Blower:
 
 https://www.micronel.com/en/productfinder/radial-blower-u65hn-024ks-6/
 
