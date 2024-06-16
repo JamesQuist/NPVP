@@ -35,8 +35,8 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define KNOWN_REF_PRESSURE 0
-#define PSI_PRESSURE_MAX 1.015228
-#define PSI_PRESSURE_MIN -1.015228
+#define PSI_PRESSURE_MAX 7
+#define PSI_PRESSURE_MIN -7
 #define OUTPUT_VOLTAGE_MAX 5
 #define OUTPUT_VOLTAGE_MIN 0
 #define ADC_THRESHOLD 100  // Define a threshold for detecting sensor disconnection
