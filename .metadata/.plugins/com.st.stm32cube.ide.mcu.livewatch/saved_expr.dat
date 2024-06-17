@@ -1,3 +1,6 @@
 adc_value
-avg_voltage_value
-avg_psi_pressure
+measured_voltage_value
+measured_psi_pressure
+offset_error
+timer_start
+timer_val
