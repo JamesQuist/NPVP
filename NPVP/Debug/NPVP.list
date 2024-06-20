@@ -874,8 +874,8 @@ int main(void)
  800093a:	4911      	ldr	r1, [pc, #68]	@ (8000980 <main+0x150>)
  800093c:	4811      	ldr	r0, [pc, #68]	@ (8000984 <main+0x154>)
  800093e:	f004 f8c3 	bl	8004ac8 <HAL_UART_Transmit>
-	  HAL_Delay(1000);
- 8000942:	f44f 707a 	mov.w	r0, #1000	@ 0x3e8
+	  HAL_Delay(500);
+ 8000942:	f44f 70fa 	mov.w	r0, #500	@ 0x1f4
  8000946:	f000 fe6b 	bl	8001620 <HAL_Delay>
 	  HAL_ADC_Start(&hadc1);
  800094a:	e784      	b.n	8000856 <main+0x26>

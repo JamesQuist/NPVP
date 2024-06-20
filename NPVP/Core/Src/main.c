@@ -386,7 +386,7 @@ int main(void)
 //	  sprintf(output_message, "ADC Value: %.2f, Voltage: %.2fV, %.2fcmH2O\r\n", adc_value, measured_voltage_value, corrected_cmh2o_pressure);
 	  sprintf(output_message, "ADC Value: %.2f, Voltage: %.2fV, psi: %.1fpsi, cmh2o: %.1fcmh2o\r\n", adc_value, measured_voltage_value, measured_psi_pressure, corrected_cmh2o_pressure);
 	  HAL_UART_Transmit(&huart3,(uint8_t *)output_message, strlen(output_message), HAL_MAX_DELAY);
-	  HAL_Delay(1000);
+	  HAL_Delay(500);
 
     /* USER CODE END WHILE */
 
