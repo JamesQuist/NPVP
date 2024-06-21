@@ -2,5 +2,7 @@ adc_value
 measured_voltage_value
 measured_psi_pressure
 offset_error
-timer_start
-timer_val
+raw_adc_value
+sensor_status
+start_up
+adc_sum

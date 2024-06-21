@@ -40,6 +40,7 @@
 #define OUTPUT_VOLTAGE_MAX 5
 #define OUTPUT_VOLTAGE_MIN 0
 #define ADC_THRESHOLD 100  // Define a threshold for detecting sensor disconnection
+#define ADC_IDEAL_ZERO_PRESSURE_VALUE 3102.272727
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -88,13 +89,14 @@ int sampling_done = 0;
 
 float offset_error = 0.0;
 
+float raw_adc_value = 0.0;
 float adc_value = 0.0;
 float avg_adc_value = 0.0;
 float measured_psi_pressure = 0.0;
 float measured_voltage_value = 0.0;
 float auto_zero_pressure_value = 0.0;
 float corrected_pressure_value = 0.0;
-float corrected_cmh2o_pressure = 0.0;
+float measured_cmh2o_pressure = 0.0;
 
 char output_message[100];
 // New
@@ -118,14 +120,12 @@ void func_init_sensor_connection_status(void);
 void func_monitor_sensor_status(void);
 void func_calibrate_sensor(void);
 void func_average_adc_measurement(void);
-void func_new_measurement(void);
+void func_adc_conversion(void);
 void func_get_adc_value(void);
 void func_adc_to_voltage(void);
 void func_voltage_to_psi(void);
 void func_psi_to_cmh2o(void);
 void func_auto_zero(void);
-void func_corrected_pressure(void);
-void func_corrected_measurement(void);
 
 //float apply_low_pass_filter(float current_value, float previous_filtered_value);
 
@@ -139,7 +139,7 @@ void func_clear_values(void){
 //	float *volt_value_ptr = &measured_voltage_value;
 //	float *adc_value_ptr = &adc_value;
 
-	adc_value = 0.0;
+	raw_adc_value = 0.0;
 	measured_voltage_value = 0.0;
 
 }
@@ -151,6 +151,7 @@ void func_init_sensor_connection_status(void){
 
 	HAL_ADC_Stop(&hadc1);
 	HAL_ADC_Start(&hadc1);
+	HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
 
 	//Get new measurements
 	func_get_adc_value(); // Does not need to be an average
@@ -177,12 +178,20 @@ void func_monitor_sensor_status(void){
 void func_calibrate_sensor(void){
 	while(start_up){
 		// Take initial measurement
-		func_new_measurement();
+		func_average_adc_measurement();
 
 		// Set auto-zero value
 		func_auto_zero();
 		start_up = 0;
 	}
+}
+
+// Get measurement values
+void func_adc_conversion(void){
+	func_adc_to_voltage();
+	func_voltage_to_psi();
+	func_psi_to_cmh2o();
+
 }
 
 // Average measurement
@@ -212,36 +221,26 @@ void func_average_adc_measurement(void) {
     sampling_done = 1;
 }
 
-// Get measurement values
-void func_new_measurement(void){
-	func_average_adc_measurement();
-	func_adc_to_voltage();
-	func_voltage_to_psi();
-
-}
 // Get ADC value
 void func_get_adc_value(void){
 //	float *adc_ptr = &adc_value;
-	adc_value = HAL_ADC_GetValue(&hadc1);
-
-
-//	float current_adc_value = HAL_ADC_GetValue(&hadc1);
-//	filtered_adc_value = apply_low_pass_filter(current_adc_value, filtered_adc_value);
-//	adc_value = filtered_adc_value;
+	raw_adc_value = HAL_ADC_GetValue(&hadc1);
 }
 
-//// Low-pass filter
-//float apply_low_pass_filter(float current_value, float previous_filtered_value) {
-//    return (FILTER_ALPHA * current_value) + ((1 - FILTER_ALPHA) * previous_filtered_value);
-//}
-
+// Auto-zero
+void func_auto_zero(void){
+//	float *auto_zero_pressure_ptr = &auto_zero_pressure_value;
+//	auto_zero_pressure_value =  measured_psi_pressure - KNOWN_REF_PRESSURE;
+	offset_error = avg_adc_value - ADC_IDEAL_ZERO_PRESSURE_VALUE;
+}
 
 // ADC to voltage
 void func_adc_to_voltage(void){
 //	float *voltage_ptr = &measured_voltage_value;
 	if(sensor_status){
-		measured_voltage_value = (adc_value * 3.3) / 4095;
+		measured_voltage_value = (raw_adc_value * 3.3) / 4095;
 	} else {
+		adc_value = avg_adc_value - offset_error;
 		measured_voltage_value = (adc_value * 3.3) / 4095;
 	}
 }
@@ -254,27 +253,9 @@ void func_voltage_to_psi(void){
 
 }
 
-// Auto-zero
-void func_auto_zero(void){
-//	float *auto_zero_pressure_ptr = &auto_zero_pressure_value;
-	auto_zero_pressure_value =  measured_psi_pressure - KNOWN_REF_PRESSURE;
-}
-
-// Corrected pressure
-void func_corrected_pressure(void){
-	corrected_pressure_value = measured_psi_pressure - auto_zero_pressure_value;
-//	func_psi_to_cmh2o();
-}
-
 // psi to cmh2o
 void func_psi_to_cmh2o(void){
-	corrected_cmh2o_pressure = corrected_pressure_value * 70.307;
-}
-
-// Corrected measurement
-void func_corrected_measurement(void){
-	func_corrected_pressure();
-	func_psi_to_cmh2o();
+	measured_cmh2o_pressure = measured_psi_pressure * 70.307;
 }
 
 // Timer interrupt callback
@@ -282,7 +263,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     if (htim->Instance == TIM2) {
         if (!sampling_done) {
         	func_get_adc_value();
-            adc_sum += adc_value;
+            adc_sum += raw_adc_value;
             sample_count++;
         }
     }
@@ -364,27 +345,28 @@ int main(void)
 	  func_monitor_sensor_status();
 
 	  //Sensor calibration
-//	  func_calibrate_sensor();
+	  func_calibrate_sensor();
 
 	  // Take and correct measurement
-//	  func_new_measurement();
-//	  func_corrected_measurement();
-	  func_get_adc_value();
-	  offset_error = adc_value - 3102.272727;
-//
-	  HAL_ADC_Stop(&hadc1);
-	  HAL_ADC_Start(&hadc1);
-	  HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+	  func_average_adc_measurement();
 
-	  func_get_adc_value();
-	  adc_value = adc_value - offset_error;
-//	  adc_value = adc_value - 125.362424;
-	  func_adc_to_voltage();
-	  func_voltage_to_psi();
-	  corrected_cmh2o_pressure = measured_psi_pressure *  70.30696;
+	  // Convert measurement
+	  func_adc_conversion();
+
+//	  func_get_adc_value();
+//	  offset_error = adc_value - ADC_IDEAL_ZERO_PRESSURE_VALUE;
+//
+//	  HAL_ADC_Stop(&hadc1);
+//	  HAL_ADC_Start(&hadc1);
+//	  HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+//
+//	  func_get_adc_value();
+//	  adc_value = raw_adc_value - offset_error;
+//	  func_adc_to_voltage();
+//	  func_voltage_to_psi();
 
 //	  sprintf(output_message, "ADC Value: %.2f, Voltage: %.2fV, %.2fcmH2O\r\n", adc_value, measured_voltage_value, corrected_cmh2o_pressure);
-	  sprintf(output_message, "ADC Value: %.2f, Voltage: %.2fV, psi: %.1fpsi, cmh2o: %.1fcmh2o\r\n", adc_value, measured_voltage_value, measured_psi_pressure, corrected_cmh2o_pressure);
+	  sprintf(output_message, "ADC Value: %.2f, Voltage: %.2fV, psi: %.1fpsi, cmh2o: %.1fcmh2o\r\n", avg_adc_value, measured_voltage_value, measured_psi_pressure, measured_cmh2o_pressure);
 	  HAL_UART_Transmit(&huart3,(uint8_t *)output_message, strlen(output_message), HAL_MAX_DELAY);
 	  HAL_Delay(500);
 
