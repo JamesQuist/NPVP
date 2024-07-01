@@ -40,7 +40,7 @@
 #define OUTPUT_VOLTAGE_MAX 5
 #define OUTPUT_VOLTAGE_MIN 0
 #define ADC_THRESHOLD 100  // Define a threshold for detecting sensor disconnection
-#define ADC_IDEAL_ZERO_PRESSURE_VALUE 3102.272727
+#define ADC_IDEAL_ZERO_PRESSURE_VALUE 3102.2727
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -81,22 +81,21 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 /* USER CODE BEGIN PV */
 
 int sensor_status = 1;
-int start_up = 1;
+int start_up_status = 1;
+int calibration_status = 1;
 
 float adc_sum = 0.0;
 float sample_count = 0.0;
 int sampling_done = 0;
 
-float offset_error = 0.0;
-
 float raw_adc_value = 0.0;
 float adc_value = 0.0;
 float avg_adc_value = 0.0;
-float measured_psi_pressure = 0.0;
+float measured_kpa_pressure = 0.0;
 float measured_voltage_value = 0.0;
 float auto_zero_pressure_value = 0.0;
-float corrected_pressure_value = 0.0;
 float measured_cmh2o_pressure = 0.0;
+float measured_inh2o_pressure = 0.0;
 
 char output_message[100];
 // New
@@ -123,8 +122,9 @@ void func_average_adc_measurement(void);
 void func_adc_conversion(void);
 void func_get_adc_value(void);
 void func_adc_to_voltage(void);
-void func_voltage_to_psi(void);
-void func_psi_to_cmh2o(void);
+void func_voltage_to_kpa(void);
+void func_kpa_to_cmh2o(void);
+void func_kpa_to_inh2o(void);
 void func_auto_zero(void);
 
 //float apply_low_pass_filter(float current_value, float previous_filtered_value);
@@ -176,21 +176,21 @@ void func_monitor_sensor_status(void){
 
 // Calibrate sensor
 void func_calibrate_sensor(void){
-	while(start_up){
-		// Take initial measurement
-		func_average_adc_measurement();
+	// Take initial measurements
+	func_average_adc_measurement();
 
-		// Set auto-zero value
-		func_auto_zero();
-		start_up = 0;
-	}
+	// Set auto-zero value
+	func_auto_zero();
+	calibration_status = 0;
+
 }
 
 // Get measurement values
 void func_adc_conversion(void){
 	func_adc_to_voltage();
-	func_voltage_to_psi();
-	func_psi_to_cmh2o();
+	func_voltage_to_kpa();
+	func_kpa_to_cmh2o();
+	func_kpa_to_inh2o();
 
 }
 
@@ -221,6 +221,13 @@ void func_average_adc_measurement(void) {
     sampling_done = 1;
 }
 
+// New measurement
+void new_measurement(void){
+	func_get_adc_value();
+	func_adc_conversion();
+
+}
+
 // Get ADC value
 void func_get_adc_value(void){
 //	float *adc_ptr = &adc_value;
@@ -230,8 +237,9 @@ void func_get_adc_value(void){
 // Auto-zero
 void func_auto_zero(void){
 //	float *auto_zero_pressure_ptr = &auto_zero_pressure_value;
-//	auto_zero_pressure_value =  measured_psi_pressure - KNOWN_REF_PRESSURE;
-	offset_error = avg_adc_value - ADC_IDEAL_ZERO_PRESSURE_VALUE;
+	func_adc_to_voltage();
+	func_voltage_to_kpa();
+	auto_zero_pressure_value =  measured_kpa_pressure - KNOWN_REF_PRESSURE;
 }
 
 // ADC to voltage
@@ -239,23 +247,31 @@ void func_adc_to_voltage(void){
 //	float *voltage_ptr = &measured_voltage_value;
 	if(sensor_status){
 		measured_voltage_value = (raw_adc_value * 3.3) / 4095;
+	} else if(calibration_status){
+		measured_voltage_value = (avg_adc_value * 3.3) / 4095;
 	} else {
-		adc_value = avg_adc_value - offset_error;
-		measured_voltage_value = (adc_value * 3.3) / 4095;
+		measured_voltage_value = (raw_adc_value * 3.3) / 4095;
 	}
 }
 
-// Voltage to psi
-void func_voltage_to_psi(void){
-//	float *psi_ptr = &measured_psi_pressure;
-	measured_psi_pressure = (((measured_voltage_value - OUTPUT_VOLTAGE_MIN) *
-  	  	  (PSI_PRESSURE_MAX  - PSI_PRESSURE_MIN)) / (OUTPUT_VOLTAGE_MAX - OUTPUT_VOLTAGE_MIN)) + PSI_PRESSURE_MIN;
-
+// Voltage to Pa
+void func_voltage_to_kpa(void){
+	if(calibration_status){
+		measured_kpa_pressure = ((measured_voltage_value / OUTPUT_VOLTAGE_MAX) - 0.5) / 0.057;
+	} else {
+		measured_kpa_pressure = ((measured_voltage_value / OUTPUT_VOLTAGE_MAX) - 0.5) / 0.057;
+		measured_kpa_pressure = measured_kpa_pressure - auto_zero_pressure_value;
+	}
 }
 
 // psi to cmh2o
-void func_psi_to_cmh2o(void){
-	measured_cmh2o_pressure = measured_psi_pressure * 70.307;
+void func_kpa_to_cmh2o(void){
+	measured_cmh2o_pressure = measured_kpa_pressure * 10.1971621298;
+}
+
+// psi to inh2o
+void func_kpa_to_inh2o(void){
+	measured_inh2o_pressure = measured_kpa_pressure * 4.01463;
 }
 
 // Timer interrupt callback
@@ -345,28 +361,15 @@ int main(void)
 	  func_monitor_sensor_status();
 
 	  //Sensor calibration
-	  func_calibrate_sensor();
+	  while(calibration_status){
+		  func_calibrate_sensor();
+	  }
 
-	  // Take and correct measurement
-	  func_average_adc_measurement();
+	  // Take and convert measurement
+	  new_measurement();
 
-	  // Convert measurement
-	  func_adc_conversion();
-
-//	  func_get_adc_value();
-//	  offset_error = adc_value - ADC_IDEAL_ZERO_PRESSURE_VALUE;
-//
-//	  HAL_ADC_Stop(&hadc1);
-//	  HAL_ADC_Start(&hadc1);
-//	  HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
-//
-//	  func_get_adc_value();
-//	  adc_value = raw_adc_value - offset_error;
-//	  func_adc_to_voltage();
-//	  func_voltage_to_psi();
-
-//	  sprintf(output_message, "ADC Value: %.2f, Voltage: %.2fV, %.2fcmH2O\r\n", adc_value, measured_voltage_value, corrected_cmh2o_pressure);
-	  sprintf(output_message, "ADC Value: %.2f, Voltage: %.2fV, psi: %.1fpsi, cmh2o: %.1fcmh2o\r\n", avg_adc_value, measured_voltage_value, measured_psi_pressure, measured_cmh2o_pressure);
+	  // Output to terminal
+	  sprintf(output_message, "Raw ADC Value: %.2f, Voltage: %.2fV, kpa: %.1fkpa, inh2o: %.1finh2o\r\n", raw_adc_value, measured_voltage_value, measured_kpa_pressure, measured_inh2o_pressure);
 	  HAL_UART_Transmit(&huart3,(uint8_t *)output_message, strlen(output_message), HAL_MAX_DELAY);
 	  HAL_Delay(500);
 
@@ -458,7 +461,7 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
-  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
