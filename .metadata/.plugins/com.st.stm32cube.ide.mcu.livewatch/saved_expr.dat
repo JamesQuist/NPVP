@@ -1,8 +1,7 @@
-adc_value
 measured_voltage_value
-measured_psi_pressure
-offset_error
 raw_adc_value
 sensor_status
-start_up
 adc_sum
+calibration_status
+measured_kpa_pressure
+auto_zero_pressure_value

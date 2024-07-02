@@ -79,6 +79,8 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
 
+// NOTE: ADC LOW-PASS FILTER @ ~222 Hz w/ 0.47uF capacitor and 1.5k ohms resistor
+
 int sensor_status = 1;
 int start_up_status = 1;
 int calibration_status = 1;
