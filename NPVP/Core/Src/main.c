@@ -256,10 +256,8 @@ void func_adc_to_voltage(void){
 
 // Voltage to Pa
 void func_voltage_to_kpa(void){
-	if(calibration_status){
-		measured_kpa_pressure = ((measured_voltage_value / OUTPUT_VOLTAGE_MAX) - 0.5) / 0.057;
-	} else {
-		measured_kpa_pressure = ((measured_voltage_value / OUTPUT_VOLTAGE_MAX) - 0.5) / 0.057;
+	measured_kpa_pressure = ((measured_voltage_value / OUTPUT_VOLTAGE_MAX) - 0.5) / 0.057;
+	if(!calibration_status){
 		measured_kpa_pressure = measured_kpa_pressure - auto_zero_pressure_value;
 	}
 }
