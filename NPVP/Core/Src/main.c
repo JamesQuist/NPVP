@@ -346,8 +346,15 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+  // Turn alarm on when program starts
+  HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, SET);
+  HAL_Delay(1500);
+  HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, RESET);
+
   while (1)
   {
+
 	  HAL_ADC_Start(&hadc1);
 	  HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
 
@@ -368,7 +375,7 @@ int main(void)
 	  new_measurement();
 
 	  // Output to terminal
-	  sprintf(output_message, "Raw ADC Value: %.2f, Voltage: %.2fV, kpa: %.1fkpa, inh2o: %.1finh2o\r\n", raw_adc_value, measured_voltage_value, measured_kpa_pressure, measured_inh2o_pressure);
+	  sprintf(output_message, "Raw ADC Value: %.2f, Voltage: %.2fV, kpa: %.1fkpa, inh2o: %.1finh2o, cmh2o: %.1fcmh2o\r\n", raw_adc_value, measured_voltage_value, measured_kpa_pressure, measured_inh2o_pressure, measured_cmh2o_pressure);
 	  HAL_UART_Transmit(&huart3,(uint8_t *)output_message, strlen(output_message), HAL_MAX_DELAY);
 	  HAL_Delay(500);
 
@@ -460,7 +467,7 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
-  hadc1.Init.ContinuousConvMode = ENABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
@@ -680,11 +687,14 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(USB_PowerSwitchOn_GPIO_Port, USB_PowerSwitchOn_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : USER_Btn_Pin */
-  GPIO_InitStruct.Pin = USER_Btn_Pin;
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : USER_BUTTON_Pin */
+  GPIO_InitStruct.Pin = USER_BUTTON_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(USER_Btn_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(USER_BUTTON_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : YELLOW_LED_Pin */
   GPIO_InitStruct.Pin = YELLOW_LED_Pin;
@@ -712,6 +722,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(USB_OverCurrent_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : ALARM_Pin */
+  GPIO_InitStruct.Pin = ALARM_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(ALARM_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
