@@ -245,7 +245,7 @@ void func_auto_zero(void){
 
 // ADC to voltage
 void func_adc_to_voltage(void){
-//	float *voltage_ptr = &measured_voltage_value;
+
 	if(sensor_status){
 		measured_voltage_value = (raw_adc_value * 3.3) / 4095;
 	} else if(calibration_status){
@@ -375,7 +375,7 @@ int main(void)
 	  new_measurement();
 
 	  // Output to terminal
-	  sprintf(output_message, "Raw ADC Value: %.2f, Voltage: %.2fV, kpa: %.1fkpa, inh2o: %.1finh2o, cmh2o: %.1fcmh2o\r\n", raw_adc_value, measured_voltage_value, measured_kpa_pressure, measured_inh2o_pressure, measured_cmh2o_pressure);
+	  sprintf(output_message, "Raw ADC Value: %.2f, Voltage: %.2fV, kpa: %.1fkpa, inh2o: %.1finh2o\r\n", raw_adc_value, measured_voltage_value, measured_kpa_pressure, measured_inh2o_pressure);
 	  HAL_UART_Transmit(&huart3,(uint8_t *)output_message, strlen(output_message), HAL_MAX_DELAY);
 	  HAL_Delay(500);
 

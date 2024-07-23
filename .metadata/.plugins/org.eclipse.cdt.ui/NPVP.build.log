@@ -1,10 +1,10 @@
-11:59:02 **** Incremental Build of configuration Debug for project NPVP ****
+17:18:38 **** Incremental Build of configuration Debug for project NPVP ****
 make -j15 all 
 arm-none-eabi-size  NPVP.elf 
    text	   data	    bss	    dec	    hex	filename
-  37848	    804	   3820	  42472	   a5e8	NPVP.elf
+  37816	    804	   3820	  42440	   a5c8	NPVP.elf
 Finished building: default.size.stdout
  
 
-11:59:03 Build Finished. 0 errors, 0 warnings. (took 138ms)
+17:18:38 Build Finished. 0 errors, 0 warnings. (took 152ms)
 
