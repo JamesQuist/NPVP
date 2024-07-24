@@ -387,46 +387,46 @@ int main(void)
 
   // Start PWM
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
-//  int pulse = 0;
+  int pulse = 0;
 
 
   while (1)
   {
-	  pulse = pulse + 1;
+	  pulse = pulse + 4;
 	  if (pulse > 4800){
 		  pulse = 0;
 	  }
 
 	  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, pulse);
 
-	  HAL_Delay(10);
+	  HAL_Delay(1000);
 
-	  HAL_ADC_Start(&hadc1);
-	  HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
-
-	  // Check initial sensor connection.
-	  while(sensor_status){
-		  func_init_sensor_connection_status();
-	  }
-
-	  // Ongoing sensor connection status
-	  func_monitor_sensor_status();
-
-	  //Sensor calibration
-	  while(calibration_status){
-		  func_calibrate_sensor();
-	  }
-
-	  // Take and convert measurement
-	  new_measurement();
-
-      // PID control calculations
-
-
-	  // Output to terminal
-	  sprintf(output_message, "Raw ADC Value: %.2f, Voltage: %.2fV, kpa: %.1fkpa, inh2o: %.1finh2o\r\n", raw_adc_value, measured_voltage_value, measured_kpa_pressure, measured_inh2o_pressure);
-	  HAL_UART_Transmit(&huart3,(uint8_t *)output_message, strlen(output_message), HAL_MAX_DELAY);
-	  HAL_Delay(500);
+//	  HAL_ADC_Start(&hadc1);
+//	  HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+//
+//	  // Check initial sensor connection.
+//	  while(sensor_status){
+//		  func_init_sensor_connection_status();
+//	  }
+//
+//	  // Ongoing sensor connection status
+//	  func_monitor_sensor_status();
+//
+//	  //Sensor calibration
+//	  while(calibration_status){
+//		  func_calibrate_sensor();
+//	  }
+//
+//	  // Take and convert measurement
+//	  new_measurement();
+//
+//      // PID control calculations
+//
+//
+//	  // Output to terminal
+//	  sprintf(output_message, "Raw ADC Value: %.2f, Voltage: %.2fV, kpa: %.1fkpa, inh2o: %.1finh2o\r\n", raw_adc_value, measured_voltage_value, measured_kpa_pressure, measured_inh2o_pressure);
+//	  HAL_UART_Transmit(&huart3,(uint8_t *)output_message, strlen(output_message), HAL_MAX_DELAY);
+//	  HAL_Delay(500);
 
     /* USER CODE END WHILE */
 
