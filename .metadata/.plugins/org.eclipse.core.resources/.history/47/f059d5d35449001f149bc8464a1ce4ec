@@ -408,10 +408,34 @@ int main(void)
 	  }
 
 	  // Take and convert measurement
-	  new_measurement();
+	  //new_measurement();
 
-      // PID control calculations
+	  uint32_t start_time = HAL_GetTick();
+	  while (HAL_GetTick() - start_time < (uint32_t)(inspiration_time * 1000)){
+		  HAL_ADC_Start(&hadc1);
+		  HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+		  uint32_t adc_value = HAL_ADC_GetValue(&hadc1);
+		  float pressure_voltage = adc_value * (3.3f / 4096.0f);
+		  float pressure = (pressure_voltage - 2.5f) / 0.2f;
 
+	      // PID control calculations
+	      float error = setpoint - measured_inh2o_pressure;
+	      integral += error;
+	      float derivative = error - previous_error;
+	      float output = Kp * error + Ki * integral + Kd * derivative;
+	      previous_error = error;
+
+	      // Clamp output to valid PWM range
+	      if (output < 0) output = 0;
+	      if (output > 9599) output = 9599;
+	  }
+
+      // Set blower speed based on PID output
+      __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, (uint32_t)output);
+
+      // Timing for I:E ratio
+      __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, 0); // Turn off blower
+      HAL_Delay(expiration_time * 1000); // Expiration time
 
 	  // Output to terminal
 	  sprintf(output_message, "Raw ADC Value: %.2f, Voltage: %.2fV, kpa: %.1fkpa, inh2o: %.1finh2o\r\n", raw_adc_value, measured_voltage_value, measured_kpa_pressure, measured_inh2o_pressure);

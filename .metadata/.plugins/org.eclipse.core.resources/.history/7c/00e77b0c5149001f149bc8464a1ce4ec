@@ -102,9 +102,9 @@ float measured_cmh2o_pressure = 0.0;
 float measured_inh2o_pressure = 0.0;
 
 // Respiratory Settings
-int breath_rate = 20;
+int breath_rate = 12;
 int inspiratory_ratio_portion = 1;
-int expiratory_ratio_portion = 2;
+int expository_ratio_portion = 2;
 float breath_cycle_time;
 float inspiration_time;
 float expiration_time;
@@ -378,12 +378,9 @@ int main(void)
   HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, RESET);
 
   // Initialize breath cycle variables
-  breath_cycle_time = 60.0 / breath_rate;
-  inspiration_time = (breath_cycle_time / (inspiratory_ratio_portion + expiratory_ratio_portion)) * inspiratory_ratio_portion;
+  breath_cycle_time = 60.0f / breath_rate;
+  inspiration_time = (breath_cycle_time / ((float)inspiratory_ratio_portion + expository_ratio_portion)) * inspiratory_ratio_portion;
   expiration_time = breath_cycle_time - inspiration_time;
-
-  // Initialize setpoint
-  setpoint = inspiratory_pressure_value;
 
   // Start PWM
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
@@ -409,9 +406,6 @@ int main(void)
 
 	  // Take and convert measurement
 	  new_measurement();
-
-      // PID control calculations
-
 
 	  // Output to terminal
 	  sprintf(output_message, "Raw ADC Value: %.2f, Voltage: %.2fV, kpa: %.1fkpa, inh2o: %.1finh2o\r\n", raw_adc_value, measured_voltage_value, measured_kpa_pressure, measured_inh2o_pressure);

@@ -40,7 +40,6 @@
 #define OUTPUT_VOLTAGE_MIN 0
 #define ADC_THRESHOLD 100  // Define a threshold for detecting sensor disconnection
 #define ADC_IDEAL_ZERO_PRESSURE_VALUE 3102.2727
-#define TIME_IN_SECONDS 60
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -103,25 +102,16 @@ float measured_inh2o_pressure = 0.0;
 
 // Respiratory Settings
 int breath_rate = 20;
-int inspiratory_ratio_portion = 1;
-int expiratory_ratio_portion = 2;
-float breath_cycle_time;
-float inspiration_time;
-float expiration_time;
+int inspiration_ratio_portion = 1;
+int expiration_ratio_portion = 2;
+
+float breath_cycle_time = 60 / breath_rate; // seconds
+float inspiration_time = (breath_cycle_time / (inspiratory_ratio_section + expository_ratio_section)) * inspiratory_ratio_section; // seconds
+float expiration_time  = (breath_cycle_time / (inspiratory_ratio_section + expository_ratio_section)) * expository_ratio_section; // seconds
 
 // Pressure settings
 float inspiratory_pressure_value = -20.0; // inh2o
 float expiratory_pressure_value = 0.0; // inh2o
-
-// PID controller parameters
-float Kp = 1.0f;
-float Ki = 0.5f;
-float Kd = 0.1f;
-float setpoint; // Desired pressure in inH2O
-
-// PID controller variables
-float integral = 0.0f;
-float previous_error = 0.0f;
 
 // Terminal output
 char output_message[100];
@@ -372,21 +362,13 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
+  // Start PWM
+  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
+
   // Turn alarm on when program starts
   HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, SET);
   HAL_Delay(1500);
   HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, RESET);
-
-  // Initialize breath cycle variables
-  breath_cycle_time = 60.0 / breath_rate;
-  inspiration_time = (breath_cycle_time / (inspiratory_ratio_portion + expiratory_ratio_portion)) * inspiratory_ratio_portion;
-  expiration_time = breath_cycle_time - inspiration_time;
-
-  // Initialize setpoint
-  setpoint = inspiratory_pressure_value;
-
-  // Start PWM
-  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
 
   while (1)
   {
@@ -409,9 +391,6 @@ int main(void)
 
 	  // Take and convert measurement
 	  new_measurement();
-
-      // PID control calculations
-
 
 	  // Output to terminal
 	  sprintf(output_message, "Raw ADC Value: %.2f, Voltage: %.2fV, kpa: %.1fkpa, inh2o: %.1finh2o\r\n", raw_adc_value, measured_voltage_value, measured_kpa_pressure, measured_inh2o_pressure);
