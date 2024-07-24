@@ -140,7 +140,7 @@ static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
 //void func_init_measurement(void);
 void func_clear_values(void);
-void func_init_sensor_connection_status(void);
+void func_sensor_connection_status(void);
 void func_monitor_sensor_status(void);
 void func_calibrate_sensor(void);
 void func_average_adc_measurement(void);
@@ -170,7 +170,7 @@ void func_clear_values(void){
 }
 
 // Initial sensor connection status
-void func_init_sensor_connection_status(void){
+void func_sensor_connection_status(void){
 //	int *sensor_status_ptr = &sensor_status;
 	func_clear_values();
 
@@ -248,6 +248,10 @@ void func_average_adc_measurement(void) {
 
 // New measurement
 void new_measurement(void){
+	HAL_ADC_Stop(&hadc1);
+	HAL_ADC_Start(&hadc1);
+	HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+
 	func_get_adc_value();
 	func_adc_conversion();
 
@@ -377,6 +381,18 @@ int main(void)
   HAL_Delay(1500);
   HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, RESET);
 
+  // Start ADC
+  HAL_ADC_Start(&hadc1);
+  HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+
+  // Check initial sensor connection.
+  func_sensor_connection_status();
+
+  //Sensor calibration
+  while(calibration_status){
+	  func_calibrate_sensor();
+  }
+
   // Initialize breath cycle variables
   breath_cycle_time = 60.0 / breath_rate;
   inspiration_time = (breath_cycle_time / (inspiratory_ratio_portion + expiratory_ratio_portion)) * inspiratory_ratio_portion;
@@ -387,12 +403,12 @@ int main(void)
 
   // Start PWM
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
-//  int pulse = 0;
+  int pulse = 0;
 
 
   while (1)
   {
-	  pulse = pulse + 1;
+	  pulse = pulse + 100;
 	  if (pulse > 4800){
 		  pulse = 0;
 	  }
@@ -401,20 +417,11 @@ int main(void)
 
 	  HAL_Delay(10);
 
-	  HAL_ADC_Start(&hadc1);
-	  HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
-
-	  // Check initial sensor connection.
-	  while(sensor_status){
-		  func_init_sensor_connection_status();
-	  }
-
 	  // Ongoing sensor connection status
 	  func_monitor_sensor_status();
 
-	  //Sensor calibration
-	  while(calibration_status){
-		  func_calibrate_sensor();
+	  while(sensor_status){
+		  func_sensor_connection_status();
 	  }
 
 	  // Take and convert measurement
@@ -683,7 +690,7 @@ static void MX_TIM4_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 4800;
+  sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)

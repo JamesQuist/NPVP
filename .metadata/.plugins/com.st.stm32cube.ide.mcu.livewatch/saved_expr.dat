@@ -5,3 +5,6 @@ adc_sum
 calibration_status
 measured_kpa_pressure
 auto_zero_pressure_value
+inspiration_time
+expiration_time
+breath_cycle_time
