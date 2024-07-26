@@ -83,6 +83,8 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 /* USER CODE BEGIN PV */
 
 // NOTE: ADC LOW-PASS FILTER @ ~222 Hz w/ 0.47uF capacitor and 1.5k ohms resistor
+// NOTE: TIMER 2 is for determining frequency for adc
+// NOTE: TIMER 4 is for the blower PWM signal
 
 // Sensor Settings
 int sensor_status = 1;

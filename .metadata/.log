@@ -680,3 +680,29 @@ Command-line arguments:  -os macosx -ws cocoa -arch x86_64 -keyring /Users/james
 
 !ENTRY com.st.stm32cube.ide.mcu.debug 4 0 2024-07-24 18:17:00.163
 !MESSAGE Existing sessions are:
+!SESSION 2024-07-25 10:42:53.921 -----------------------------------------------
+eclipse.buildId=Version 1.15.1
+java.version=17.0.8.1
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=macosx, ARCH=x86_64, WS=cocoa, NL=en_US
+Framework arguments:  -keyring /Users/james/.eclipse_keyring
+Command-line arguments:  -os macosx -ws cocoa -arch x86_64 -keyring /Users/james/.eclipse_keyring
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2024-07-25 10:42:58.083
+!MESSAGE Log4j2 initialized with config file /Users/james/NPVP/.metadata/.log4j2.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2024-07-25 10:43:04.455
+!MESSAGE Started RMI Server, listening on port 41337
+!SESSION 2024-07-25 17:02:39.168 -----------------------------------------------
+eclipse.buildId=Version 1.15.1
+java.version=17.0.8.1
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=macosx, ARCH=x86_64, WS=cocoa, NL=en_US
+Framework arguments:  -keyring /Users/james/.eclipse_keyring
+Command-line arguments:  -os macosx -ws cocoa -arch x86_64 -keyring /Users/james/.eclipse_keyring
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2024-07-25 17:02:43.358
+!MESSAGE Log4j2 initialized with config file /Users/james/NPVP/.metadata/.log4j2.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2024-07-25 17:02:49.332
+!MESSAGE Started RMI Server, listening on port 41337
