@@ -155,8 +155,6 @@ void func_kpa_to_cmh2o(void);
 void func_kpa_to_inh2o(void);
 void func_auto_zero(void);
 
-//float apply_low_pass_filter(float current_value, float previous_filtered_value);
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -329,11 +327,6 @@ void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc) {
     }
 }
 
-// DMA Error callback
-//void HAL_DMA_ErrorCallback(DMA_HandleTypeDef *hdma) {
-//    // Handle DMA errors
-//}
-
 /* USER CODE END 0 */
 
 /**
@@ -372,7 +365,6 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-//  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buffer, ADC_BUF_LEN);
 
   /* USER CODE END 2 */
 
@@ -405,22 +397,23 @@ int main(void)
   setpoint = inspiratory_pressure_value;
 
   // Start PWM
-  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
-  int pulse = 4800;
+//  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
+//  int pulse = 4800;
 
   while (1)
   {
-	  if(pulse == 4800){
-		  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, pulse);
-		  HAL_Delay(1000);
-		  pulse = 0;
-	  }
-
-	  if(pulse == 0){
-		  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, pulse);
-		  HAL_Delay(2000);
-		  pulse = 4800;
-	  }
+	  // PWM temporary test
+//	  if(pulse == 4800){
+//		  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, pulse);
+//		  HAL_Delay(1000);
+//		  pulse = 0;
+//	  }
+//
+//	  if(pulse == 0){
+//		  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, pulse);
+//		  HAL_Delay(2000);
+//		  pulse = 4800;
+//	  }
 
 
 	  // Ongoing sensor connection status
