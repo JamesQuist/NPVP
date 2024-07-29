@@ -35,6 +35,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+// Temp
+#define BUFFER_SIZE 5000
+// Temp
+
 #define KNOWN_REF_PRESSURE 0
 #define SENSOR_SENSITIVITY 0.286 // V/kPa
 #define OUTPUT_VOLTAGE_MAX 5
@@ -42,6 +46,8 @@
 #define ADC_THRESHOLD 100  // Define a threshold for detecting sensor disconnection
 #define ADC_IDEAL_ZERO_PRESSURE_VALUE 3102.2727
 #define TIME_IN_SECONDS 60
+
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -70,11 +76,13 @@ ETH_DMADescTypeDef DMATxDscrTab[ETH_TX_DESC_CNT] __attribute__((section(".TxDecr
 ETH_TxPacketConfig TxConfig;
 
 ADC_HandleTypeDef hadc1;
+DMA_HandleTypeDef hdma_adc1;
 
 ETH_HandleTypeDef heth;
 
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim4;
+TIM_HandleTypeDef htim6;
 
 UART_HandleTypeDef huart3;
 
@@ -85,6 +93,11 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 // NOTE: ADC LOW-PASS FILTER @ ~222 Hz w/ 0.47uF capacitor and 1.5k ohms resistor
 // NOTE: TIMER 2 is for determining frequency for adc
 // NOTE: TIMER 4 is for the blower PWM signal
+
+// Temp
+uint32_t timer_value;
+uint32_t adc_buffer[BUFFER_SIZE];
+uint32_t adc_value_temp;
 
 // Sensor Settings
 int sensor_status = 1;
@@ -134,12 +147,14 @@ char output_message[100];
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_USART3_UART_Init(void);
-static void MX_USB_OTG_FS_PCD_Init(void);
+static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_ETH_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM4_Init(void);
+static void MX_USART3_UART_Init(void);
+static void MX_USB_OTG_FS_PCD_Init(void);
+static void MX_TIM6_Init(void);
 /* USER CODE BEGIN PFP */
 //void func_init_measurement(void);
 void func_clear_values(void);
@@ -313,19 +328,19 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     }
 }
 
-// DMA Transfer Complete callback
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
-    if (hadc->Instance == ADC1) {
-        // Handle ADC DMA transfer complete
-    }
-}
-
-// DMA Half Transfer Complete callback
-void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc) {
-    if (hadc->Instance == ADC1) {
-        // Handle ADC DMA half-transfer complete
-    }
-}
+//// DMA Transfer Complete callback
+//void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
+//    if (hadc->Instance == ADC1) {
+//        // Handle ADC DMA transfer complete
+//    }
+//}
+//
+//// DMA Half Transfer Complete callback
+//void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc) {
+//    if (hadc->Instance == ADC1) {
+//        // Handle ADC DMA half-transfer complete
+//    }
+//}
 
 /* USER CODE END 0 */
 
@@ -358,35 +373,38 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART3_UART_Init();
-  MX_USB_OTG_FS_PCD_Init();
+  MX_DMA_Init();
   MX_ADC1_Init();
   MX_ETH_Init();
   MX_TIM2_Init();
   MX_TIM4_Init();
+  MX_USART3_UART_Init();
+  MX_USB_OTG_FS_PCD_Init();
+  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
-
-  /* USER CODE END 2 */
-
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
 
   // Turn alarm on when program starts
   HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, SET);
   HAL_Delay(1500);
   HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, RESET);
 
+  // Start ADC with DMA
+  HAL_ADC_Start_DMA(&hadc1, adc_buffer, BUFFER_SIZE);
+
+  // Start timer 6
+  HAL_TIM_Base_Start(&htim6);
+
   // Start ADC
-  HAL_ADC_Start(&hadc1);
-  HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+//  HAL_ADC_Start(&hadc1);
+//  HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
 
   // Check initial sensor connection.
-  func_sensor_connection_status();
-
-  //Sensor calibration
-  while(calibration_status){
-	  func_calibrate_sensor();
-  }
+//  func_sensor_connection_status();
+//
+//  //Sensor calibration
+//  while(calibration_status){
+//	  func_calibrate_sensor();
+//  }
 
   // Initialize breath cycle variables
   breath_cycle_time = 60.0 / breath_rate;
@@ -399,6 +417,11 @@ int main(void)
   // Start PWM
 //  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
 //  int pulse = 4800;
+
+  /* USER CODE END 2 */
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
 
   while (1)
   {
@@ -416,23 +439,23 @@ int main(void)
 //	  }
 
 
-	  // Ongoing sensor connection status
-	  func_monitor_sensor_status();
-
-	  while(sensor_status){
-		  func_sensor_connection_status();
-	  }
-
-	  // Take and convert measurement
-	  new_measurement();
-
-      // PID control calculations
-
-
-	  // Output to terminal
-	  sprintf(output_message, "Raw ADC Value: %.2f, Voltage: %.2fV, kpa: %.1fkpa, inh2o: %.1finh2o\r\n", raw_adc_value, measured_voltage_value, measured_kpa_pressure, measured_inh2o_pressure);
-	  HAL_UART_Transmit(&huart3,(uint8_t *)output_message, strlen(output_message), HAL_MAX_DELAY);
-	  HAL_Delay(500);
+//	  // Ongoing sensor connection status
+//	  func_monitor_sensor_status();
+//
+//	  while(sensor_status){
+//		  func_sensor_connection_status();
+//	  }
+//
+//	  // Take and convert measurement
+//	  new_measurement();
+//
+//      // PID control calculations
+//
+//
+//	  // Output to terminal
+//	  sprintf(output_message, "Raw ADC Value: %.2f, Voltage: %.2fV, kpa: %.1fkpa, inh2o: %.1finh2o\r\n", raw_adc_value, measured_voltage_value, measured_kpa_pressure, measured_inh2o_pressure);
+//	  HAL_UART_Transmit(&huart3,(uint8_t *)output_message, strlen(output_message), HAL_MAX_DELAY);
+//	  HAL_Delay(500);
 
     /* USER CODE END WHILE */
 
@@ -524,11 +547,11 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
   hadc1.Init.ContinuousConvMode = DISABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
-  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
+  hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T6_TRGO;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.NbrOfConversion = 1;
-  hadc1.Init.DMAContinuousRequests = DISABLE;
+  hadc1.Init.DMAContinuousRequests = ENABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
@@ -689,7 +712,7 @@ static void MX_TIM4_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
+  sConfigOC.Pulse = 4800;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
@@ -700,6 +723,44 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 2 */
   HAL_TIM_MspPostInit(&htim4);
+
+}
+
+/**
+  * @brief TIM6 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM6_Init(void)
+{
+
+  /* USER CODE BEGIN TIM6_Init 0 */
+
+  /* USER CODE END TIM6_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM6_Init 1 */
+
+  /* USER CODE END TIM6_Init 1 */
+  htim6.Instance = TIM6;
+  htim6.Init.Prescaler = 9.6-1;
+  htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim6.Init.Period = 10-1;
+  htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM6_Init 2 */
+
+  /* USER CODE END TIM6_Init 2 */
 
 }
 
@@ -770,6 +831,22 @@ static void MX_USB_OTG_FS_PCD_Init(void)
   /* USER CODE BEGIN USB_OTG_FS_Init 2 */
 
   /* USER CODE END USB_OTG_FS_Init 2 */
+
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA2_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA2_Stream0_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
 
 }
 
@@ -862,6 +939,13 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc) {
+	adc_value_temp = adc_buffer[1];
+}
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
+}
+
 
 /* USER CODE END 4 */
 

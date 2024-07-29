@@ -8,3 +8,5 @@ auto_zero_pressure_value
 inspiration_time
 expiration_time
 breath_cycle_time
+timer_value
+adc_value_temp
