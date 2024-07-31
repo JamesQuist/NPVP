@@ -83,6 +83,7 @@ ETH_HandleTypeDef heth;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim4;
 TIM_HandleTypeDef htim6;
+TIM_HandleTypeDef htim7;
 
 UART_HandleTypeDef huart3;
 
@@ -94,9 +95,11 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 // NOTE: TIMER 2 @ 10kHz is for ADC. MPXV7007 response time is 1ms
 // NOTE: TIMER 4 @ 5kHz is for the blower PWM signal
 // NOTE: TIMER 6 @ 1kHz is for sensor warm up, which is 20ms
+// NOTE: TIMER 7 @ 1kHz is for alarm
 
 // Temp
 uint32_t timer_value;
+static uint32_t counter = 0;
 
 // Sensor Settings
 int sensor_status = 1;
@@ -154,8 +157,9 @@ static void MX_TIM4_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 static void MX_TIM6_Init(void);
+static void MX_TIM7_Init(void);
 /* USER CODE BEGIN PFP */
-//void func_init_measurement(void);
+
 void func_clear_values(void);
 void func_sensor_connection_status(void);
 void func_monitor_sensor_status(void);
@@ -317,15 +321,15 @@ void func_kpa_to_inh2o(void){
 }
 
 // Timer interrupt callback
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-    if (htim->Instance == TIM2) {
-        if (!sampling_done) {
-        	func_get_adc_value();
-            adc_sum += raw_adc_value;
-            sample_count++;
-        }
-    }
-}
+//void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+//    if (htim->Instance == TIM2) {
+//        if (!sampling_done) {
+//        	func_get_adc_value();
+//            adc_sum += raw_adc_value;
+//            sample_count++;
+//        }
+//    }
+//}
 
 //// DMA Transfer Complete callback
 //void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
@@ -380,22 +384,14 @@ int main(void)
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   MX_TIM6_Init();
+  MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
 
-  // Turn alarm on when program starts
-  HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, SET);
-  HAL_Delay(1500);
-  HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, RESET);
-
-
-  // Start timer 6
-  HAL_TIM_Base_Start(&htim6);
-
-  // Start ADC
+//  // Start ADC
 //  HAL_ADC_Start(&hadc1);
 //  HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
-
-  // Check initial sensor connection.
+//
+//  // Check initial sensor connection.
 //  func_sensor_connection_status();
 //
 //  //Sensor calibration
@@ -756,8 +752,48 @@ static void MX_TIM6_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN TIM6_Init 2 */
-
+  HAL_TIM_Base_Start_IT(&htim6);
+  HAL_TIM_Base_Start(&htim6);
   /* USER CODE END TIM6_Init 2 */
+
+}
+
+/**
+  * @brief TIM7 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM7_Init(void)
+{
+
+  /* USER CODE BEGIN TIM7_Init 0 */
+
+  /* USER CODE END TIM7_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM7_Init 1 */
+
+  /* USER CODE END TIM7_Init 1 */
+  htim7.Instance = TIM7;
+  htim7.Init.Prescaler = 2-1;
+  htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim7.Init.Period = 48000-1;
+  htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim7) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim7, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM7_Init 2 */
+  HAL_TIM_Base_Start_IT(&htim7);
+  HAL_TIM_Base_Start(&htim7);
+  /* USER CODE END TIM7_Init 2 */
 
 }
 
@@ -936,7 +972,27 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
+    if (htim->Instance == TIM6) {
+    	counter++;
+    	if (counter == 20){ // counts to 20ms
+    		HAL_TIM_Base_Stop_IT(&htim6);
+    		//func_calibrate_sensor();
+    	}
+    }
+//    else if (htim->Instance == TIM7) {
+//    	HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, SET);
+//    	static uint32_t counter_two = 0;
+//    	counter_two++;
+//    	if (counter_two == 1500) {
+//    		HAL_TIM_Base_Stop_IT(&htim7);
+//    		HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, RESET);
+//    	}
+//
+//
+//    }
+}
 /* USER CODE END 4 */
 
 /**
