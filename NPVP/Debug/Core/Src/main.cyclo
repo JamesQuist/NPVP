@@ -23,5 +23,5 @@
 ../Core/Src/main.c:840:13:MX_USB_OTG_FS_PCD_Init	2
 ../Core/Src/main.c:873:13:MX_DMA_Init	1
 ../Core/Src/main.c:891:13:MX_GPIO_Init	1
-../Core/Src/main.c:975:6:HAL_TIM_PeriodElapsedCallback	3
-../Core/Src/main.c:1002:6:Error_Handler	1
+../Core/Src/main.c:975:6:HAL_TIM_PeriodElapsedCallback	5
+../Core/Src/main.c:1001:6:Error_Handler	1

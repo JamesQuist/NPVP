@@ -980,18 +980,17 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     		HAL_TIM_Base_Stop_IT(&htim6);
     		//func_calibrate_sensor();
     	}
+    } else if (htim->Instance == TIM7) {
+    	HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, SET);
+    	static uint32_t counter_two = 0;
+    	counter_two++;
+    	if (counter_two == 1500) {
+    		HAL_TIM_Base_Stop_IT(&htim7);
+    		HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, RESET);
+    	}
+
+
     }
-//    else if (htim->Instance == TIM7) {
-//    	HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, SET);
-//    	static uint32_t counter_two = 0;
-//    	counter_two++;
-//    	if (counter_two == 1500) {
-//    		HAL_TIM_Base_Stop_IT(&htim7);
-//    		HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, RESET);
-//    	}
-//
-//
-//    }
 }
 /* USER CODE END 4 */
 
