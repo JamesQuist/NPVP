@@ -92,14 +92,14 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 /* USER CODE BEGIN PV */
 
 // NOTE: ADC LOW-PASS FILTER @ ~222 Hz w/ 0.47uF capacitor and 1.5k ohms resistor
-// NOTE: TIMER 2 @ 10kHz is for ADC. MPXV7007 response time is 1ms
+// NOTE: TIMER 2 @ 500Hz is for ADC. MPXV7007 response time is 1ms
 // NOTE: TIMER 4 @ 5kHz is for the blower PWM signal
 // NOTE: TIMER 6 @ 1kHz is for sensor warm up, which is 20ms
 // NOTE: TIMER 7 @ 1kHz is for alarm
 
 // Temp
-uint32_t timer_value;
-static uint32_t counter = 0;
+volatile uint32_t adc_buffer[BUFFER_SIZE];
+int dog = 0;
 
 // Sensor Settings
 int sensor_status = 1;
@@ -110,7 +110,9 @@ float adc_sum = 0.0;
 float sample_count = 0.0;
 int sampling_done = 0;
 
-float raw_adc_value = 0.0;
+uint32_t raw_adc_value = 0;
+uint32_t adc_total;
+
 float adc_value = 0.0;
 float avg_adc_value = 0.0;
 float measured_kpa_pressure = 0.0;
@@ -180,10 +182,8 @@ void func_auto_zero(void);
 
 // Clear variable values
 void func_clear_values(void){
-//	float *volt_value_ptr = &measured_voltage_value;
-//	float *adc_value_ptr = &adc_value;
 
-	raw_adc_value = 0.0;
+	raw_adc_value = 0;
 	measured_voltage_value = 0.0;
 
 }
@@ -220,7 +220,7 @@ void func_monitor_sensor_status(void){
 
 // Calibrate sensor
 void func_calibrate_sensor(void){
-	// Take initial measurements
+	// Get average ADC value
 	func_average_adc_measurement();
 
 	// Set auto-zero value
@@ -240,29 +240,7 @@ void func_adc_conversion(void){
 
 // Average measurement
 void func_average_adc_measurement(void) {
-    // Initialize accumulation variables
-    adc_sum = 0.0;
-    sample_count = 0.0;
-    sampling_done = 0;
-
-    // Start the timer
-    HAL_TIM_Base_Start_IT(&htim2);
-
-    // Wait for 1000ms
-    HAL_Delay(1000);
-
-    // Stop the timer
-    HAL_TIM_Base_Stop_IT(&htim2);
-
-    // Calculate average
-    if (sample_count > 0) {
-    	avg_adc_value = adc_sum / sample_count; // Average ADC value stored
-    } else {
-    	avg_adc_value = 0.0; // Default value if no samples were taken
-    }
-
-    // Mark sampling as done
-    sampling_done = 1;
+	avg_adc_value = (float)adc_total / dog;
 }
 
 // New measurement
@@ -278,7 +256,9 @@ void new_measurement(void){
 
 // Get ADC value
 void func_get_adc_value(void){
-//	float *adc_ptr = &adc_value;
+	HAL_ADC_Stop(&hadc1);
+	HAL_ADC_Start(&hadc1);
+	HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
 	raw_adc_value = HAL_ADC_GetValue(&hadc1);
 }
 
@@ -294,11 +274,11 @@ void func_auto_zero(void){
 void func_adc_to_voltage(void){
 
 	if(sensor_status){
-		measured_voltage_value = (raw_adc_value * 3.3) / 4095;
+		measured_voltage_value = ((float)raw_adc_value * 3.3) / 4095;
 	} else if(calibration_status){
 		measured_voltage_value = (avg_adc_value * 3.3) / 4095;
 	} else {
-		measured_voltage_value = (raw_adc_value * 3.3) / 4095;
+		measured_voltage_value = ((float)raw_adc_value * 3.3) / 4095;
 	}
 }
 
@@ -319,31 +299,6 @@ void func_kpa_to_cmh2o(void){
 void func_kpa_to_inh2o(void){
 	measured_inh2o_pressure = measured_kpa_pressure * 4.01463;
 }
-
-// Timer interrupt callback
-//void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-//    if (htim->Instance == TIM2) {
-//        if (!sampling_done) {
-//        	func_get_adc_value();
-//            adc_sum += raw_adc_value;
-//            sample_count++;
-//        }
-//    }
-//}
-
-//// DMA Transfer Complete callback
-//void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
-//    if (hadc->Instance == ADC1) {
-//        // Handle ADC DMA transfer complete
-//    }
-//}
-//
-//// DMA Half Transfer Complete callback
-//void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc) {
-//    if (hadc->Instance == ADC1) {
-//        // Handle ADC DMA half-transfer complete
-//    }
-//}
 
 /* USER CODE END 0 */
 
@@ -538,13 +493,13 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
-  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
-  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
-  hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T2_TRGO;
+  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.NbrOfConversion = 1;
-  hadc1.Init.DMAContinuousRequests = ENABLE;
+  hadc1.Init.DMAContinuousRequests = DISABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
@@ -634,9 +589,9 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 2-1;
+  htim2.Init.Prescaler = 3-1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 4800-1;
+  htim2.Init.Period = 64000-1;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -974,24 +929,45 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
-    if (htim->Instance == TIM6) {
+    if (htim->Instance == TIM6) { // Sensor calibration
+    	static uint32_t counter = 0;
     	counter++;
     	if (counter == 20){ // counts to 20ms
     		HAL_TIM_Base_Stop_IT(&htim6);
-    		//func_calibrate_sensor();
+    		HAL_TIM_Base_Start_IT(&htim2);
+    		HAL_TIM_Base_Start(&htim2);
     	}
-    } else if (htim->Instance == TIM7) {
+    } else if (htim->Instance == TIM7) { // Alarm monitoring
     	HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, SET);
     	static uint32_t counter_two = 0;
     	counter_two++;
-    	if (counter_two == 1500) {
+    	if (counter_two == 2000) {
     		HAL_TIM_Base_Stop_IT(&htim7);
     		HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, RESET);
     	}
-
-
+    } else if (htim->Instance == TIM2) { // ADC
+    	// Trigger ADC conversion via DMA
+    	dog++;
+    	func_get_adc_value();
+    	adc_total = adc_total + raw_adc_value;
+    	if (dog == 50) { // Sample size
+    		HAL_TIM_Base_Stop_IT(&htim2);
+    		func_calibrate_sensor();
+    	}
+    	//HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buffer, BUFFER_SIZE);
     }
+
 }
+
+// DMA Transfer Complete callback
+//void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
+//	htim2.Instance->CNT=0;
+//}
+//
+//// DMA Half Transfer Complete callback
+//void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc) {
+//
+//}
 /* USER CODE END 4 */
 
 /**

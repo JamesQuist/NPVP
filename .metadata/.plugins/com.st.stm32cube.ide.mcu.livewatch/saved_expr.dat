@@ -1,12 +1,4 @@
-measured_voltage_value
 raw_adc_value
-sensor_status
-adc_sum
-calibration_status
-measured_kpa_pressure
+dog
+avg_adc_value
 auto_zero_pressure_value
-inspiration_time
-expiration_time
-breath_cycle_time
-timer_value
-adc_value_temp
