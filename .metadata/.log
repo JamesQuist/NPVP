@@ -978,3 +978,22 @@ Command-line arguments:  -os macosx -ws cocoa -arch x86_64 -keyring /Users/james
 
 !ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2024-08-01 16:40:48.776
 !MESSAGE Started RMI Server, listening on port 41337
+!SESSION 2024-08-02 08:10:00.514 -----------------------------------------------
+eclipse.buildId=Version 1.15.1
+java.version=17.0.8.1
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=macosx, ARCH=x86_64, WS=cocoa, NL=en_US
+Framework arguments:  -keyring /Users/james/.eclipse_keyring
+Command-line arguments:  -os macosx -ws cocoa -arch x86_64 -keyring /Users/james/.eclipse_keyring
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2024-08-02 08:10:05.153
+!MESSAGE Log4j2 initialized with config file /Users/james/NPVP/.metadata/.log4j2.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2024-08-02 08:10:21.215
+!MESSAGE Started RMI Server, listening on port 41337
+
+!ENTRY com.st.stm32cube.ide.mcu.debug 4 0 2024-08-02 09:28:02.786
+!MESSAGE Error - No active DSF-Session. tmpSessionId = 6 (contextManager row 121)
+
+!ENTRY com.st.stm32cube.ide.mcu.debug 4 0 2024-08-02 09:28:02.787
+!MESSAGE Existing sessions are:

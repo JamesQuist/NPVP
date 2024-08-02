@@ -37,6 +37,7 @@
 /* USER CODE BEGIN PD */
 // Temp
 #define SAMPLE_SIZE 64
+#define PULSE 5800
 // Temp
 
 #define KNOWN_REF_PRESSURE 0
@@ -99,6 +100,9 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 // Temp
 //volatile uint32_t adc_buffer[SAMPLE_SIZE];
 uint32_t tim2_counter = 0;
+uint32_t pulse_rate = PULSE;
+uint32_t inhale = 1;
+uint32_t exhale = 0;
 
 // Sensor Settings
 int sensor_status = 0;
@@ -121,12 +125,12 @@ float measured_cmh2o_pressure = 0.0;
 float measured_inh2o_pressure = 0.0;
 
 // Respiratory Settings
-int breath_rate = 20;
-int inspiratory_ratio_portion = 1;
-int expiratory_ratio_portion = 2;
-float breath_cycle_time;
-float inspiration_time;
-float expiration_time;
+uint32_t breath_rate = 16; // per minute
+uint32_t inspiratory_ratio_portion = 1;
+uint32_t expiratory_ratio_portion = 2;
+float single_breath_time_length;
+float inspiratory_length;
+float expiratory_length;
 
 // Pressure settings
 float inspiratory_pressure_value = -20.0; // inh2o
@@ -322,6 +326,10 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+// Initialize breath cycle variables
+	single_breath_time_length = 60 / (float)breath_rate; // secs
+	inspiratory_length = single_breath_time_length / (inspiratory_ratio_portion + expiratory_ratio_portion); // secs
+	expiratory_length = single_breath_time_length - inspiratory_length; // secs
 
   /* USER CODE END 1 */
 
@@ -353,25 +361,11 @@ int main(void)
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
 
-//  // Start ADC
-//  HAL_ADC_Start(&hadc1);
-//  HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
-//
 //  // Check initial sensor connection.
 //  func_sensor_connection_status();
-//
-//  //Sensor calibration
-//  while(calibration_status){
-//	  func_calibrate_sensor();
-//  }
-
-  // Initialize breath cycle variables
-  breath_cycle_time = 60.0 / breath_rate;
-  inspiration_time = (breath_cycle_time / (inspiratory_ratio_portion + expiratory_ratio_portion)) * inspiratory_ratio_portion;
-  expiration_time = breath_cycle_time - inspiration_time;
 
   // Initialize setpoint
-  setpoint = inspiratory_pressure_value;
+//  setpoint = inspiratory_pressure_value;
 
   // Start PWM
 //  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
@@ -671,7 +665,7 @@ static void MX_TIM4_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
+  sConfigOC.Pulse = pulse_rate;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
@@ -927,11 +921,28 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     if (htim->Instance == TIM6) { // Sensor calibration
     	static uint32_t counter = 0;
     	counter++;
-    	if (counter == 20){ // counts to 20ms
-    		HAL_TIM_Base_Stop_IT(&htim6);
-    		HAL_TIM_Base_Start_IT(&htim2);
-    		HAL_TIM_Base_Start(&htim2);
-//    		HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buffer, SAMPLE_SIZE);
+    	if (calibration_status){
+    		if (counter == 20) { // counts to 20ms
+    			HAL_TIM_Base_Start_IT(&htim2);
+    			HAL_TIM_Base_Start(&htim2);
+    			counter = 0;
+    		}
+    	} else if (inhale) {
+    		HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
+    		if (counter == inspiratory_length * 1000) {
+    			inhale =0;
+    			exhale = 1;
+    			counter = 0;
+    			pulse_rate = 0;
+    		}
+    	} else if (exhale) {
+    		HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_4);
+    		if (counter == expiratory_length * 1000) {
+    			exhale = 0;
+    			inhale = 1;
+    			counter = 0;
+    			pulse_rate = PULSE;
+    		}
     	}
     } else if (htim->Instance == TIM7) { // Alarm monitoring
     	HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, SET);
@@ -958,7 +969,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     		}
     	}
     }
-
 }
 
 // DMA Transfer Complete callback

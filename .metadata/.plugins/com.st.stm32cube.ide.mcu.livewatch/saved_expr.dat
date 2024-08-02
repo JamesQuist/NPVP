@@ -3,3 +3,8 @@ avg_adc_value
 auto_zero_pressure_value
 adc_total
 calibration_status
+single_breath_time_length
+inspiratory_length
+expiratory_length
+inhale
+exhale
