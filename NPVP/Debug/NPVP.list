@@ -37,19 +37,19 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  16 .debug_aranges 000015a8  00000000  00000000  000291c0  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_rnglists 000010ee  00000000  00000000  0002a768  2**0
+ 17 .debug_rnglists 000010f0  00000000  00000000  0002a768  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_macro  0002b434  00000000  00000000  0002b856  2**0
+ 18 .debug_macro  0002b434  00000000  00000000  0002b858  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .debug_line   000194d0  00000000  00000000  00056c8a  2**0
+ 19 .debug_line   000194d2  00000000  00000000  00056c8c  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 20 .debug_str    0010b69f  00000000  00000000  0007015a  2**0
+ 20 .debug_str    0010b69f  00000000  00000000  0007015e  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 21 .comment      00000043  00000000  00000000  0017b7f9  2**0
+ 21 .comment      00000043  00000000  00000000  0017b7fd  2**0
                   CONTENTS, READONLY
- 22 .debug_frame  00006b94  00000000  00000000  0017b83c  2**2
+ 22 .debug_frame  00006b94  00000000  00000000  0017b840  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 23 .debug_line_str 00000045  00000000  00000000  001823d0  2**0
+ 23 .debug_line_str 00000045  00000000  00000000  001823d4  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -2116,7 +2116,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
  8001056:	681b      	ldr	r3, [r3, #0]
  8001058:	4a5c      	ldr	r2, [pc, #368]	@ (80011cc <HAL_TIM_PeriodElapsedCallback+0x180>)
  800105a:	4293      	cmp	r3, r2
- 800105c:	d166      	bne.n	800112c <HAL_TIM_PeriodElapsedCallback+0xe0>
+ 800105c:	d168      	bne.n	8001130 <HAL_TIM_PeriodElapsedCallback+0xe4>
     	static uint32_t counter = 0;
     	counter++;
  800105e:	4b5c      	ldr	r3, [pc, #368]	@ (80011d0 <HAL_TIM_PeriodElapsedCallback+0x184>)
@@ -2155,7 +2155,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
  800108e:	4b53      	ldr	r3, [pc, #332]	@ (80011dc <HAL_TIM_PeriodElapsedCallback+0x190>)
  8001090:	681b      	ldr	r3, [r3, #0]
  8001092:	2b00      	cmp	r3, #0
- 8001094:	d022      	beq.n	80010dc <HAL_TIM_PeriodElapsedCallback+0x90>
+ 8001094:	d024      	beq.n	80010e0 <HAL_TIM_PeriodElapsedCallback+0x94>
     		HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
  8001096:	210c      	movs	r1, #12
  8001098:	4851      	ldr	r0, [pc, #324]	@ (80011e0 <HAL_TIM_PeriodElapsedCallback+0x194>)
@@ -2188,126 +2188,126 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
  80010d4:	4b46      	ldr	r3, [pc, #280]	@ (80011f0 <HAL_TIM_PeriodElapsedCallback+0x1a4>)
  80010d6:	2200      	movs	r2, #0
  80010d8:	601a      	str	r2, [r3, #0]
-}
- 80010da:	e072      	b.n	80011c2 <HAL_TIM_PeriodElapsedCallback+0x176>
-    	} else if (exhale) {
- 80010dc:	4b43      	ldr	r3, [pc, #268]	@ (80011ec <HAL_TIM_PeriodElapsedCallback+0x1a0>)
- 80010de:	681b      	ldr	r3, [r3, #0]
- 80010e0:	2b00      	cmp	r3, #0
- 80010e2:	d06e      	beq.n	80011c2 <HAL_TIM_PeriodElapsedCallback+0x176>
-    		HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_4);
- 80010e4:	210c      	movs	r1, #12
- 80010e6:	483e      	ldr	r0, [pc, #248]	@ (80011e0 <HAL_TIM_PeriodElapsedCallback+0x194>)
- 80010e8:	f003 fd8c 	bl	8004c04 <HAL_TIM_PWM_Stop>
-    		if (counter == expiratory_length * 1000) {
- 80010ec:	4b38      	ldr	r3, [pc, #224]	@ (80011d0 <HAL_TIM_PeriodElapsedCallback+0x184>)
- 80010ee:	681b      	ldr	r3, [r3, #0]
- 80010f0:	ee07 3a90 	vmov	s15, r3
- 80010f4:	eeb8 7a67 	vcvt.f32.u32	s14, s15
- 80010f8:	4b3e      	ldr	r3, [pc, #248]	@ (80011f4 <HAL_TIM_PeriodElapsedCallback+0x1a8>)
- 80010fa:	edd3 7a00 	vldr	s15, [r3]
- 80010fe:	eddf 6a3a 	vldr	s13, [pc, #232]	@ 80011e8 <HAL_TIM_PeriodElapsedCallback+0x19c>
- 8001102:	ee67 7aa6 	vmul.f32	s15, s15, s13
- 8001106:	eeb4 7a67 	vcmp.f32	s14, s15
- 800110a:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
- 800110e:	d158      	bne.n	80011c2 <HAL_TIM_PeriodElapsedCallback+0x176>
-    			exhale = OFF;
- 8001110:	4b36      	ldr	r3, [pc, #216]	@ (80011ec <HAL_TIM_PeriodElapsedCallback+0x1a0>)
- 8001112:	2200      	movs	r2, #0
- 8001114:	601a      	str	r2, [r3, #0]
-    			inhale = ON;
- 8001116:	4b31      	ldr	r3, [pc, #196]	@ (80011dc <HAL_TIM_PeriodElapsedCallback+0x190>)
- 8001118:	2201      	movs	r2, #1
- 800111a:	601a      	str	r2, [r3, #0]
-    			counter = 0;
- 800111c:	4b2c      	ldr	r3, [pc, #176]	@ (80011d0 <HAL_TIM_PeriodElapsedCallback+0x184>)
- 800111e:	2200      	movs	r2, #0
- 8001120:	601a      	str	r2, [r3, #0]
-    			pulse_rate = PULSE;
- 8001122:	4b33      	ldr	r3, [pc, #204]	@ (80011f0 <HAL_TIM_PeriodElapsedCallback+0x1a4>)
- 8001124:	f241 62a8 	movw	r2, #5800	@ 0x16a8
- 8001128:	601a      	str	r2, [r3, #0]
-}
- 800112a:	e04a      	b.n	80011c2 <HAL_TIM_PeriodElapsedCallback+0x176>
-    } else if (htim->Instance == TIM7) { // Alarm monitoring
- 800112c:	687b      	ldr	r3, [r7, #4]
- 800112e:	681b      	ldr	r3, [r3, #0]
- 8001130:	4a31      	ldr	r2, [pc, #196]	@ (80011f8 <HAL_TIM_PeriodElapsedCallback+0x1ac>)
- 8001132:	4293      	cmp	r3, r2
- 8001134:	d117      	bne.n	8001166 <HAL_TIM_PeriodElapsedCallback+0x11a>
-    	HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, SET);
- 8001136:	2201      	movs	r2, #1
- 8001138:	2180      	movs	r1, #128	@ 0x80
- 800113a:	4830      	ldr	r0, [pc, #192]	@ (80011fc <HAL_TIM_PeriodElapsedCallback+0x1b0>)
- 800113c:	f001 ffc4 	bl	80030c8 <HAL_GPIO_WritePin>
-    	counter_two++;
- 8001140:	4b2f      	ldr	r3, [pc, #188]	@ (8001200 <HAL_TIM_PeriodElapsedCallback+0x1b4>)
- 8001142:	681b      	ldr	r3, [r3, #0]
- 8001144:	3301      	adds	r3, #1
- 8001146:	4a2e      	ldr	r2, [pc, #184]	@ (8001200 <HAL_TIM_PeriodElapsedCallback+0x1b4>)
- 8001148:	6013      	str	r3, [r2, #0]
-    	if (counter_two == 2000) {
- 800114a:	4b2d      	ldr	r3, [pc, #180]	@ (8001200 <HAL_TIM_PeriodElapsedCallback+0x1b4>)
- 800114c:	681b      	ldr	r3, [r3, #0]
- 800114e:	f5b3 6ffa 	cmp.w	r3, #2000	@ 0x7d0
- 8001152:	d136      	bne.n	80011c2 <HAL_TIM_PeriodElapsedCallback+0x176>
-    		HAL_TIM_Base_Stop_IT(&htim7);
- 8001154:	482b      	ldr	r0, [pc, #172]	@ (8001204 <HAL_TIM_PeriodElapsedCallback+0x1b8>)
- 8001156:	f003 fbcb 	bl	80048f0 <HAL_TIM_Base_Stop_IT>
-    		HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, RESET);
- 800115a:	2200      	movs	r2, #0
- 800115c:	2180      	movs	r1, #128	@ 0x80
- 800115e:	4827      	ldr	r0, [pc, #156]	@ (80011fc <HAL_TIM_PeriodElapsedCallback+0x1b0>)
- 8001160:	f001 ffb2 	bl	80030c8 <HAL_GPIO_WritePin>
-}
- 8001164:	e02d      	b.n	80011c2 <HAL_TIM_PeriodElapsedCallback+0x176>
-    } else if (htim->Instance == TIM2) {
- 8001166:	687b      	ldr	r3, [r7, #4]
- 8001168:	681b      	ldr	r3, [r3, #0]
- 800116a:	f1b3 4f80 	cmp.w	r3, #1073741824	@ 0x40000000
- 800116e:	d128      	bne.n	80011c2 <HAL_TIM_PeriodElapsedCallback+0x176>
-    	tim2_counter++;
- 8001170:	4b25      	ldr	r3, [pc, #148]	@ (8001208 <HAL_TIM_PeriodElapsedCallback+0x1bc>)
- 8001172:	681b      	ldr	r3, [r3, #0]
- 8001174:	3301      	adds	r3, #1
- 8001176:	4a24      	ldr	r2, [pc, #144]	@ (8001208 <HAL_TIM_PeriodElapsedCallback+0x1bc>)
- 8001178:	6013      	str	r3, [r2, #0]
-    	func_get_adc_value();
- 800117a:	f7ff fa6f 	bl	800065c <func_get_adc_value>
-    	adc_total = adc_total + raw_adc_value;
- 800117e:	4b23      	ldr	r3, [pc, #140]	@ (800120c <HAL_TIM_PeriodElapsedCallback+0x1c0>)
- 8001180:	681a      	ldr	r2, [r3, #0]
- 8001182:	4b23      	ldr	r3, [pc, #140]	@ (8001210 <HAL_TIM_PeriodElapsedCallback+0x1c4>)
- 8001184:	681b      	ldr	r3, [r3, #0]
- 8001186:	4413      	add	r3, r2
- 8001188:	4a20      	ldr	r2, [pc, #128]	@ (800120c <HAL_TIM_PeriodElapsedCallback+0x1c0>)
- 800118a:	6013      	str	r3, [r2, #0]
-    	if (tim2_counter == SAMPLE_SIZE) {
- 800118c:	4b1e      	ldr	r3, [pc, #120]	@ (8001208 <HAL_TIM_PeriodElapsedCallback+0x1bc>)
- 800118e:	681b      	ldr	r3, [r3, #0]
- 8001190:	2b40      	cmp	r3, #64	@ 0x40
- 8001192:	d116      	bne.n	80011c2 <HAL_TIM_PeriodElapsedCallback+0x176>
-    		if (calibration_status) {
- 8001194:	4b0f      	ldr	r3, [pc, #60]	@ (80011d4 <HAL_TIM_PeriodElapsedCallback+0x188>)
- 8001196:	681b      	ldr	r3, [r3, #0]
- 8001198:	2b00      	cmp	r3, #0
- 800119a:	d008      	beq.n	80011ae <HAL_TIM_PeriodElapsedCallback+0x162>
-    			func_calibrate_sensor();
- 800119c:	f7ff fa20 	bl	80005e0 <func_calibrate_sensor>
-    			tim2_counter = 0;
- 80011a0:	4b19      	ldr	r3, [pc, #100]	@ (8001208 <HAL_TIM_PeriodElapsedCallback+0x1bc>)
- 80011a2:	2200      	movs	r2, #0
- 80011a4:	601a      	str	r2, [r3, #0]
-    			adc_total = 0;
- 80011a6:	4b19      	ldr	r3, [pc, #100]	@ (800120c <HAL_TIM_PeriodElapsedCallback+0x1c0>)
- 80011a8:	2200      	movs	r2, #0
- 80011aa:	601a      	str	r2, [r3, #0]
-}
- 80011ac:	e009      	b.n	80011c2 <HAL_TIM_PeriodElapsedCallback+0x176>
-    			func_average_adc_measurement();
- 80011ae:	f7ff fa31 	bl	8000614 <func_average_adc_measurement>
     			func_measurements_to_terminal();
- 80011b2:	f7ff fb1d 	bl	80007f0 <func_measurements_to_terminal>
+ 80010da:	f7ff fb89 	bl	80007f0 <func_measurements_to_terminal>
+}
+ 80010de:	e070      	b.n	80011c2 <HAL_TIM_PeriodElapsedCallback+0x176>
+    	} else if (exhale) {
+ 80010e0:	4b42      	ldr	r3, [pc, #264]	@ (80011ec <HAL_TIM_PeriodElapsedCallback+0x1a0>)
+ 80010e2:	681b      	ldr	r3, [r3, #0]
+ 80010e4:	2b00      	cmp	r3, #0
+ 80010e6:	d06c      	beq.n	80011c2 <HAL_TIM_PeriodElapsedCallback+0x176>
+    		HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_4);
+ 80010e8:	210c      	movs	r1, #12
+ 80010ea:	483d      	ldr	r0, [pc, #244]	@ (80011e0 <HAL_TIM_PeriodElapsedCallback+0x194>)
+ 80010ec:	f003 fd8a 	bl	8004c04 <HAL_TIM_PWM_Stop>
+    		if (counter == expiratory_length * 1000) {
+ 80010f0:	4b37      	ldr	r3, [pc, #220]	@ (80011d0 <HAL_TIM_PeriodElapsedCallback+0x184>)
+ 80010f2:	681b      	ldr	r3, [r3, #0]
+ 80010f4:	ee07 3a90 	vmov	s15, r3
+ 80010f8:	eeb8 7a67 	vcvt.f32.u32	s14, s15
+ 80010fc:	4b3d      	ldr	r3, [pc, #244]	@ (80011f4 <HAL_TIM_PeriodElapsedCallback+0x1a8>)
+ 80010fe:	edd3 7a00 	vldr	s15, [r3]
+ 8001102:	eddf 6a39 	vldr	s13, [pc, #228]	@ 80011e8 <HAL_TIM_PeriodElapsedCallback+0x19c>
+ 8001106:	ee67 7aa6 	vmul.f32	s15, s15, s13
+ 800110a:	eeb4 7a67 	vcmp.f32	s14, s15
+ 800110e:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
+ 8001112:	d156      	bne.n	80011c2 <HAL_TIM_PeriodElapsedCallback+0x176>
+    			exhale = OFF;
+ 8001114:	4b35      	ldr	r3, [pc, #212]	@ (80011ec <HAL_TIM_PeriodElapsedCallback+0x1a0>)
+ 8001116:	2200      	movs	r2, #0
+ 8001118:	601a      	str	r2, [r3, #0]
+    			inhale = ON;
+ 800111a:	4b30      	ldr	r3, [pc, #192]	@ (80011dc <HAL_TIM_PeriodElapsedCallback+0x190>)
+ 800111c:	2201      	movs	r2, #1
+ 800111e:	601a      	str	r2, [r3, #0]
+    			counter = 0;
+ 8001120:	4b2b      	ldr	r3, [pc, #172]	@ (80011d0 <HAL_TIM_PeriodElapsedCallback+0x184>)
+ 8001122:	2200      	movs	r2, #0
+ 8001124:	601a      	str	r2, [r3, #0]
+    			pulse_rate = PULSE;
+ 8001126:	4b32      	ldr	r3, [pc, #200]	@ (80011f0 <HAL_TIM_PeriodElapsedCallback+0x1a4>)
+ 8001128:	f241 62a8 	movw	r2, #5800	@ 0x16a8
+ 800112c:	601a      	str	r2, [r3, #0]
+}
+ 800112e:	e048      	b.n	80011c2 <HAL_TIM_PeriodElapsedCallback+0x176>
+    } else if (htim->Instance == TIM7) { // Alarm monitoring
+ 8001130:	687b      	ldr	r3, [r7, #4]
+ 8001132:	681b      	ldr	r3, [r3, #0]
+ 8001134:	4a30      	ldr	r2, [pc, #192]	@ (80011f8 <HAL_TIM_PeriodElapsedCallback+0x1ac>)
+ 8001136:	4293      	cmp	r3, r2
+ 8001138:	d117      	bne.n	800116a <HAL_TIM_PeriodElapsedCallback+0x11e>
+    	HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, SET);
+ 800113a:	2201      	movs	r2, #1
+ 800113c:	2180      	movs	r1, #128	@ 0x80
+ 800113e:	482f      	ldr	r0, [pc, #188]	@ (80011fc <HAL_TIM_PeriodElapsedCallback+0x1b0>)
+ 8001140:	f001 ffc2 	bl	80030c8 <HAL_GPIO_WritePin>
+    	counter_two++;
+ 8001144:	4b2e      	ldr	r3, [pc, #184]	@ (8001200 <HAL_TIM_PeriodElapsedCallback+0x1b4>)
+ 8001146:	681b      	ldr	r3, [r3, #0]
+ 8001148:	3301      	adds	r3, #1
+ 800114a:	4a2d      	ldr	r2, [pc, #180]	@ (8001200 <HAL_TIM_PeriodElapsedCallback+0x1b4>)
+ 800114c:	6013      	str	r3, [r2, #0]
+    	if (counter_two == 2000) {
+ 800114e:	4b2c      	ldr	r3, [pc, #176]	@ (8001200 <HAL_TIM_PeriodElapsedCallback+0x1b4>)
+ 8001150:	681b      	ldr	r3, [r3, #0]
+ 8001152:	f5b3 6ffa 	cmp.w	r3, #2000	@ 0x7d0
+ 8001156:	d134      	bne.n	80011c2 <HAL_TIM_PeriodElapsedCallback+0x176>
+    		HAL_TIM_Base_Stop_IT(&htim7);
+ 8001158:	482a      	ldr	r0, [pc, #168]	@ (8001204 <HAL_TIM_PeriodElapsedCallback+0x1b8>)
+ 800115a:	f003 fbc9 	bl	80048f0 <HAL_TIM_Base_Stop_IT>
+    		HAL_GPIO_WritePin(ALARM_GPIO_Port, ALARM_Pin, RESET);
+ 800115e:	2200      	movs	r2, #0
+ 8001160:	2180      	movs	r1, #128	@ 0x80
+ 8001162:	4826      	ldr	r0, [pc, #152]	@ (80011fc <HAL_TIM_PeriodElapsedCallback+0x1b0>)
+ 8001164:	f001 ffb0 	bl	80030c8 <HAL_GPIO_WritePin>
+}
+ 8001168:	e02b      	b.n	80011c2 <HAL_TIM_PeriodElapsedCallback+0x176>
+    } else if (htim->Instance == TIM2) {
+ 800116a:	687b      	ldr	r3, [r7, #4]
+ 800116c:	681b      	ldr	r3, [r3, #0]
+ 800116e:	f1b3 4f80 	cmp.w	r3, #1073741824	@ 0x40000000
+ 8001172:	d126      	bne.n	80011c2 <HAL_TIM_PeriodElapsedCallback+0x176>
+    	tim2_counter++;
+ 8001174:	4b24      	ldr	r3, [pc, #144]	@ (8001208 <HAL_TIM_PeriodElapsedCallback+0x1bc>)
+ 8001176:	681b      	ldr	r3, [r3, #0]
+ 8001178:	3301      	adds	r3, #1
+ 800117a:	4a23      	ldr	r2, [pc, #140]	@ (8001208 <HAL_TIM_PeriodElapsedCallback+0x1bc>)
+ 800117c:	6013      	str	r3, [r2, #0]
+    	func_get_adc_value();
+ 800117e:	f7ff fa6d 	bl	800065c <func_get_adc_value>
+    	adc_total = adc_total + raw_adc_value;
+ 8001182:	4b22      	ldr	r3, [pc, #136]	@ (800120c <HAL_TIM_PeriodElapsedCallback+0x1c0>)
+ 8001184:	681a      	ldr	r2, [r3, #0]
+ 8001186:	4b22      	ldr	r3, [pc, #136]	@ (8001210 <HAL_TIM_PeriodElapsedCallback+0x1c4>)
+ 8001188:	681b      	ldr	r3, [r3, #0]
+ 800118a:	4413      	add	r3, r2
+ 800118c:	4a1f      	ldr	r2, [pc, #124]	@ (800120c <HAL_TIM_PeriodElapsedCallback+0x1c0>)
+ 800118e:	6013      	str	r3, [r2, #0]
+    	if (tim2_counter == SAMPLE_SIZE) {
+ 8001190:	4b1d      	ldr	r3, [pc, #116]	@ (8001208 <HAL_TIM_PeriodElapsedCallback+0x1bc>)
+ 8001192:	681b      	ldr	r3, [r3, #0]
+ 8001194:	2b40      	cmp	r3, #64	@ 0x40
+ 8001196:	d114      	bne.n	80011c2 <HAL_TIM_PeriodElapsedCallback+0x176>
+    		if (calibration_status) {
+ 8001198:	4b0e      	ldr	r3, [pc, #56]	@ (80011d4 <HAL_TIM_PeriodElapsedCallback+0x188>)
+ 800119a:	681b      	ldr	r3, [r3, #0]
+ 800119c:	2b00      	cmp	r3, #0
+ 800119e:	d008      	beq.n	80011b2 <HAL_TIM_PeriodElapsedCallback+0x166>
+    			func_calibrate_sensor();
+ 80011a0:	f7ff fa1e 	bl	80005e0 <func_calibrate_sensor>
+    			tim2_counter = 0;
+ 80011a4:	4b18      	ldr	r3, [pc, #96]	@ (8001208 <HAL_TIM_PeriodElapsedCallback+0x1bc>)
+ 80011a6:	2200      	movs	r2, #0
+ 80011a8:	601a      	str	r2, [r3, #0]
+    			adc_total = 0;
+ 80011aa:	4b18      	ldr	r3, [pc, #96]	@ (800120c <HAL_TIM_PeriodElapsedCallback+0x1c0>)
+ 80011ac:	2200      	movs	r2, #0
+ 80011ae:	601a      	str	r2, [r3, #0]
+}
+ 80011b0:	e007      	b.n	80011c2 <HAL_TIM_PeriodElapsedCallback+0x176>
+    			func_average_adc_measurement();
+ 80011b2:	f7ff fa2f 	bl	8000614 <func_average_adc_measurement>
     			tim2_counter = 0;
  80011b6:	4b14      	ldr	r3, [pc, #80]	@ (8001208 <HAL_TIM_PeriodElapsedCallback+0x1bc>)
  80011b8:	2200      	movs	r2, #0

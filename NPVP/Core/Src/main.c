@@ -935,6 +935,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     			exhale = ON;
     			counter = 0;
     			pulse_rate = 0;
+    			func_measurements_to_terminal();
     		}
     	} else if (exhale) {
     		HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_4);
@@ -964,7 +965,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     			adc_total = 0;
     		} else {
     			func_average_adc_measurement();
-    			func_measurements_to_terminal();
+//    			func_measurements_to_terminal();
     			tim2_counter = 0;
     			adc_total = 0;
     		}
