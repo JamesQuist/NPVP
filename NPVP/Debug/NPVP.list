@@ -39,17 +39,17 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  17 .debug_rnglists 000010ee  00000000  00000000  0002a768  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_macro  0002b428  00000000  00000000  0002b856  2**0
+ 18 .debug_macro  0002b434  00000000  00000000  0002b856  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .debug_line   000194d0  00000000  00000000  00056c7e  2**0
+ 19 .debug_line   000194d0  00000000  00000000  00056c8a  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 20 .debug_str    0010b699  00000000  00000000  0007014e  2**0
+ 20 .debug_str    0010b69f  00000000  00000000  0007015a  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 21 .comment      00000043  00000000  00000000  0017b7e7  2**0
+ 21 .comment      00000043  00000000  00000000  0017b7f9  2**0
                   CONTENTS, READONLY
- 22 .debug_frame  00006b94  00000000  00000000  0017b82c  2**2
+ 22 .debug_frame  00006b94  00000000  00000000  0017b83c  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 23 .debug_line_str 00000045  00000000  00000000  001823c0  2**0
+ 23 .debug_line_str 00000045  00000000  00000000  001823d0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -418,7 +418,7 @@ Disassembly of section .text:
  80005de:	bf00      	nop
 
 080005e0 <func_calibrate_sensor>:
-		sensor_status = 1;
+		sensor_status = ON;
 	}
 }
 
@@ -433,7 +433,7 @@ void func_calibrate_sensor(void){
 	// Set auto-zero value
 	func_auto_zero();
  80005e8:	f000 f852 	bl	8000690 <func_auto_zero>
-	calibration_status = 0;
+	calibration_status = OFF;
  80005ec:	4b02      	ldr	r3, [pc, #8]	@ (80005f8 <func_calibrate_sensor+0x18>)
  80005ee:	2200      	movs	r2, #0
  80005f0:	601a      	str	r2, [r3, #0]
@@ -2172,11 +2172,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
  80010b8:	eeb4 7a67 	vcmp.f32	s14, s15
  80010bc:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
  80010c0:	d17f      	bne.n	80011c2 <HAL_TIM_PeriodElapsedCallback+0x176>
-    			inhale =0;
+    			inhale = OFF;
  80010c2:	4b46      	ldr	r3, [pc, #280]	@ (80011dc <HAL_TIM_PeriodElapsedCallback+0x190>)
  80010c4:	2200      	movs	r2, #0
  80010c6:	601a      	str	r2, [r3, #0]
-    			exhale = 1;
+    			exhale = ON;
  80010c8:	4b48      	ldr	r3, [pc, #288]	@ (80011ec <HAL_TIM_PeriodElapsedCallback+0x1a0>)
  80010ca:	2201      	movs	r2, #1
  80010cc:	601a      	str	r2, [r3, #0]
@@ -2211,11 +2211,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
  8001106:	eeb4 7a67 	vcmp.f32	s14, s15
  800110a:	eef1 fa10 	vmrs	APSR_nzcv, fpscr
  800110e:	d158      	bne.n	80011c2 <HAL_TIM_PeriodElapsedCallback+0x176>
-    			exhale = 0;
+    			exhale = OFF;
  8001110:	4b36      	ldr	r3, [pc, #216]	@ (80011ec <HAL_TIM_PeriodElapsedCallback+0x1a0>)
  8001112:	2200      	movs	r2, #0
  8001114:	601a      	str	r2, [r3, #0]
-    			inhale = 1;
+    			inhale = ON;
  8001116:	4b31      	ldr	r3, [pc, #196]	@ (80011dc <HAL_TIM_PeriodElapsedCallback+0x190>)
  8001118:	2201      	movs	r2, #1
  800111a:	601a      	str	r2, [r3, #0]

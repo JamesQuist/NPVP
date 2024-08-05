@@ -39,7 +39,8 @@
 #define SAMPLE_SIZE 64
 #define PULSE 5800
 // Temp
-
+#define ON 1
+#define OFF 0
 #define KNOWN_REF_PRESSURE 0
 #define SENSOR_SENSITIVITY 0.286 // V/kPa
 #define OUTPUT_VOLTAGE_MAX 5
@@ -105,9 +106,9 @@ uint32_t inhale = 1;
 uint32_t exhale = 0;
 
 // Sensor Settings
-int sensor_status = 0;
-int start_up_status = 1;
-int calibration_status = 1;
+int sensor_status = OFF;
+int start_up_status = ON;
+int calibration_status = ON;
 
 float adc_sum = 0.0;
 float sample_count = 0.0;
@@ -210,14 +211,14 @@ void func_sensor_connection_status(void){
 		HAL_UART_Transmit(&huart3,(uint8_t *)output_message, strlen(output_message), HAL_MAX_DELAY);
 		HAL_Delay(500);
 	} else {
-		sensor_status = 0;
+		sensor_status = OFF;
 	}
 }
 
 // Sensor connection monitoring
 void func_monitor_sensor_status(void){
 	if(measured_voltage_value < 0.1){
-		sensor_status = 1;
+		sensor_status = ON;
 	}
 }
 
@@ -228,7 +229,7 @@ void func_calibrate_sensor(void){
 
 	// Set auto-zero value
 	func_auto_zero();
-	calibration_status = 0;
+	calibration_status = OFF;
 
 }
 
@@ -930,16 +931,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     	} else if (inhale) {
     		HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
     		if (counter == inspiratory_length * 1000) {
-    			inhale =0;
-    			exhale = 1;
+    			inhale = OFF;
+    			exhale = ON;
     			counter = 0;
     			pulse_rate = 0;
     		}
     	} else if (exhale) {
     		HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_4);
     		if (counter == expiratory_length * 1000) {
-    			exhale = 0;
-    			inhale = 1;
+    			exhale = OFF;
+    			inhale = ON;
     			counter = 0;
     			pulse_rate = PULSE;
     		}
