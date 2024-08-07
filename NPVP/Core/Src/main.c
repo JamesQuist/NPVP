@@ -37,7 +37,7 @@
 /* USER CODE BEGIN PD */
 // Temp
 #define SAMPLE_SIZE 64
-#define PULSE 5800
+#define PULSE 5800 // 60.2%, i.e. 15inH2O
 // Temp
 #define ON 1
 #define OFF 0
